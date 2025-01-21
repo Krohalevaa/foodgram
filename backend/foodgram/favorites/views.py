@@ -1,8 +1,8 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Favorite, Recipe
-from .serializers import FavoriteSerializer, RecipeSerializer
+from .models import FavoriteRecipe
+from .serializers import FavoriteSerializer, RecipeImageSerializer
 # from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import BasePermission, IsAuthenticated
 
@@ -14,7 +14,7 @@ class IsOwnerOrAdmin(BasePermission):
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):
-    queryset = Favorite.objects.all()
+    queryset = FavoriteRecipe.objects.all()
     serializer_class = FavoriteSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
@@ -22,8 +22,8 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     def add_to_favorites(self, request):
         user = request.user
         recipe_id = request.data.get('recipe_id')
-        recipe = Recipe.objects.get(id=recipe_id)
-        favorite, created = Favorite.objects.get_or_create(user=user, recipe=recipe)
+        recipe = FavoriteRecipe.objects.get(id=recipe_id)
+        favorite, created = FavoriteRecipe.objects.get_or_create(user=user, recipe=recipe)
         if created:
             return Response({"status": "added to favorites"})
         return Response({"status": "already in favorites"})
@@ -31,6 +31,6 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='user_favorites')
     def user_favorites(self, request):
         user = request.user
-        favorites = Favorite.objects.filter(user=user)
+        favorites = FavoriteRecipe.objects.filter(user=user)
         serializer = FavoriteSerializer(favorites, many=True)
         return Response(serializer.data)

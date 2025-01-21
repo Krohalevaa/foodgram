@@ -1,13 +1,12 @@
 from rest_framework import serializers
-from .models import Favorite, Recipe, User
-import base64
+from .models import FavoriteRecipe
 from django.core.files.base import ContentFile
 from io import BytesIO
 
 # Сериализатор для модели Favorite
 class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Favorite
+        model = FavoriteRecipe
         fields = ['user', 'recipe', 'created_at']
 
     # Добавление кастомной логики для сериализации картинки
@@ -22,7 +21,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 # Сериализатор для работы с изображениями
 class RecipeImageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Recipe
+        model = FavoriteRecipe
         fields = ['title', 'image']
 
     def to_internal_value(self, data):

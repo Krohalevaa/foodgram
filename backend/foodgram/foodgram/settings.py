@@ -41,17 +41,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'rest_framework',
     'rest_framework.authtoken',  # Для токенов
     'djoser',
-
-    # 'rest_framework',
-
     'favorites.apps.FavoritesConfig',
     'recipes.apps.RecipesConfig',
-    # 'shoplist.apps.ShoplistConfig',
-    # 'staticpages.apps.StaticpagesConfig',
+    'shoplist.apps.ShoplistConfig',
     'users.apps.UsersConfig',
 ]
 

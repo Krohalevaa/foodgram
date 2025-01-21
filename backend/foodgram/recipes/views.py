@@ -1,30 +1,49 @@
-# from django.shortcuts import render
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .models import Recipe, Tag, Ingredient
+from .serializers import RecipeSerializer, TagSerializer, IngredientSerializer
+from rest_framework.permissions import IsAuthenticated
 
-# Create your views here.
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .models import Recipe
-# from .forms import RecipeForm
-from .validators import validate_favorite_recipe
 
-def recipe_detail(request, recipe_id):
-    recipe = get_object_or_404(Recipe, id=recipe_id)
-    
-    if request.method == 'POST':
-        if 'add_to_favorites' in request.POST:
-            try:
-                validate_favorite_recipe(request.user, recipe.id)
-                request.user.favorites.add(recipe)
-                messages.success(request, "Рецепт успешно добавлен в избранное.")
-            except ValidationError as e:
-                messages.error(request, str(e))
-        
-        if 'add_to_shopping_list' in request.POST:
-            # Логика для добавления в список покупок
-            pass
+class RecipeViewSet(viewsets.ModelViewSet):
+    """Вьюсет для модели Рецепт"""
+    queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
+    permission_classes = [IsAuthenticated]
 
-    return render(request, 'recipes/recipe_detail.html', {'recipe': recipe})
+    @action(detail=True, methods=['post'])
+    def favorite(self, request, pk=None):
+        """Добавить рецепт в избранное"""
+        recipe = self.get_object()
+        user = request.user
+        user.favorites.add(recipe)
+        return Response({"status": "recipe added to favorites"})
 
-def recipe_list(request):
-    recipes = Recipe.objects.all()
-    return render(request, 'recipes/recipe_list.html', {'recipes': recipes})
+    @action(detail=True, methods=['post'])
+    def subscribe(self, request, pk=None):
+        """Подписаться на автора рецепта"""
+        recipe = self.get_object()
+        user = request.user
+        user.subscriptions.add(recipe.author)
+        return Response({"status": "subscribed to author"})
+
+    @action(detail=True, methods=['post'])
+    def add_to_shoplist(self, request, pk=None):
+        """Добавить рецепт в список покупок"""
+        recipe = self.get_object()
+        user = request.user
+        user.shoplist.add(recipe)
+        return Response({"status": "recipe added to shopping list"})
+
+
+class TagViewSet(viewsets.ModelViewSet):
+    """Вьюсет для модели Тег"""
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+
+
+class IngredientViewSet(viewsets.ModelViewSet):
+    """Вьюсет для модели Ингредиент"""
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer

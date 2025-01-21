@@ -1,49 +1,36 @@
-# from django.shortcuts import render
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .models import Favorite, Recipe
+from .serializers import FavoriteSerializer, RecipeSerializer
+# from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
-# Create your views here.
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect, render
-from django.views import View
-from .models import FavoriteRecipe
-from recipes.models import Recipe  # предполагается, что модели рецептов находятся в приложении recipes
-from django.contrib import messages
-
-
-@login_required
-def add_to_favorites(request, recipe_id):
-    """
-    Проверяет, является ли пользователь залогиненным.
-    Находит рецепт по recipe_id и добавляет его в избранное.
-    Возвращает сообщение об успешном добавлении.
-    """
-    recipe = get_object_or_404(Recipe, id=recipe_id)
-    FavoriteRecipe.objects.get_or_create(user=request.user, recipe=recipe)
-    messages.success(request, 'Рецепт добавлен в избранное!')
-    return redirect(request.META.get('HTTP_REFERER'))
+class IsOwnerOrAdmin(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.user == obj.user or request.user.is_staff:
+            return True
+        return False
 
 
-@login_required
-def remove_from_favorites(request, recipe_id):
-    """
-    Проверяет, является ли пользователь залогиненным.
-    Находит рецепт по recipe_id и удаляет его из избранного, если он там есть.
-    Возвращает сообщения в зависимости от результата операции.
-    """
-    recipe = get_object_or_404(Recipe, id=recipe_id)
-    favorite_recipe = FavoriteRecipe.objects.filter(user=request.user, recipe=recipe).first()
-    if favorite_recipe:
-        favorite_recipe.delete()
-        messages.success(request, 'Рецепт удалён из избранного!')
-    else:
-        messages.error(request, 'Рецепт не найден в вашем избранном.')
-    return redirect(request.META.get('HTTP_REFERER'))
+class FavoriteViewSet(viewsets.ModelViewSet):
+    queryset = Favorite.objects.all()
+    serializer_class = FavoriteSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
+    @action(detail=False, methods=['post'], url_path='add_to_favorites')
+    def add_to_favorites(self, request):
+        user = request.user
+        recipe_id = request.data.get('recipe_id')
+        recipe = Recipe.objects.get(id=recipe_id)
+        favorite, created = Favorite.objects.get_or_create(user=user, recipe=recipe)
+        if created:
+            return Response({"status": "added to favorites"})
+        return Response({"status": "already in favorites"})
 
-class FavoritesListView(View):
-    """
-    Отображает список избранных рецептов текущего пользователя.
-    Использует метод get, чтобы вернуть HTML-шаблон с избранными рецептами.
-    """
-    def get(self, request):
-        favorite_recipes = FavoriteRecipe.objects.filter(user=request.user).select_related('recipe')
-        return render(request, 'favorites/favorites_list.html', {'favorite_recipes': favorite_recipes})
+    @action(detail=False, methods=['get'], url_path='user_favorites')
+    def user_favorites(self, request):
+        user = request.user
+        favorites = Favorite.objects.filter(user=user)
+        serializer = FavoriteSerializer(favorites, many=True)
+        return Response(serializer.data)

@@ -1,28 +1,45 @@
-# from django.shortcuts import render
-
-# Create your views here.
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views import View
-from .models import User
-from .forms import SubscribeForm
-from .validators import validate_not_self_follow
-from rest_framework import status
+from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from django.contrib.auth import get_user_model
+from .models import User
+from .serializers import UserSerializer, UserAvatarSerializer
+from .permissions import IsOwnerOrReadOnly
 
-class UserProfileView(View):
-    def get(self, request, username):
-        user = get_object_or_404(User, username=username)
-        recipes = user.recipes.all()
-        return render(request, 'users/profile.html', {'user': user, 'recipes': recipes})
 
-class SubscribeView(View):
-    def post(self, request, user_id):
-        target_user = get_object_or_404(User, id=user_id)
-        validate_not_self_follow(request.user, target_user)
-        if request.user.is_authenticated:
-            # Логика подписки/отписки
-            # ...
-            return redirect('user_profile', username=target_user.username)
-        return redirect('login')
+class UserViewSet(viewsets.ModelViewSet):
+    """Вьюсет для управления пользователями. Поддерживает CRUD."""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsOwnerOrReadOnly]
+
+    @action(detail=True,
+            methods=['post'],
+            serializer_class=UserAvatarSerializer)
+    def change_avatar(self, request, pk=None):
+        """Кастомное действие для изменения фото пользователя."""
+        user = self.get_object()
+        serializer = UserAvatarSerializer(data=request.data)
+        if serializer.is_valid():
+            user.avatar = serializer.validated_data['avatar']
+            user.save()
+            return Response({"status": "avatar updated"})
+        return Response(serializer.errors, status=400)
+
+    @action(detail=True, methods=['post'])
+    def subscribe(self, request, pk=None):
+        """Кастомное действие для подписки на пользователя."""
+        user_to_subscribe = self.get_object()
+        user = request.user
+        if user == user_to_subscribe:
+            return Response({"error": "Cannot subscribe to yourself"},
+                            status=400)
+        user.subscriptions.add(user_to_subscribe)
+        return Response({"status": "subscribed successfully"})
+
+    @action(detail=True, methods=['post'])
+    def unsubscribe(self, request, pk=None):
+        """Кастомное действие для отписки от пользователя."""
+        user_to_unsubscribe = self.get_object()
+        user = request.user
+        user.subscriptions.remove(user_to_unsubscribe)
+        return Response({"status": "unsubscribed successfully"})

@@ -1,25 +1,33 @@
-# # from django.db import models
-
-# # # Create your models here.
-# from django.db import models
+from django.db import models
 
 
-# class ShoppingList(models.Model):
-#     user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='shopping_lists')
-#     recipe = models.ForeignKey('recipes.Recipe', on_delete=models.CASCADE, related_name='shopping_lists')
+class ShoppingList(models.Model):
+    """Модель для списка покупок, где пользователь может добавлять рецепты."""
+    user = models.ForeignKey('users.User',
+                             on_delete=models.CASCADE,
+                             related_name='shopping_lists')
+    recipe = models.ForeignKey('recipes.Recipe',
+                               on_delete=models.CASCADE,
+                               related_name='shopping_lists')
 
-#     def get_shopping_list(self):
-#         ingredients = {}
-#         for recipe in self.recipe.ingredients.all():
-#             ingredient_entry = RecipeIngredient.objects.get(recipe=self.recipe, ingredient=recipe)
-#             if ingredient_entry.ingredient not in ingredients:
-#                 ingredients[ingredient_entry.ingredient] = {
-#                     'quantity': ingredient_entry.quantity,
-#                     'unit': ingredient_entry.unit
-#                 }
-#             else:
-#                 ingredients[ingredient_entry.ingredient]['quantity'] += ingredient_entry.quantity
-#         return ingredients
+    class Meta:
+        """Класс для уникальности сочетания пользователя и рецепта в списке."""
+        unique_together = ('user', 'recipe')
 
-#     def __str__(self):
-#         return f"Shopping list for {self.user.username} - {self.recipe.title}"
+    def get_shopping_list(self):
+        """Получить список ингредиентов для рецептов в списке покупок."""
+        ingredients = {}
+        for recipe in self.user.shopping_lists.all():
+            for recipe_ingredient in recipe.recipe.ingredients.all():
+                if recipe_ingredient.ingredient not in ingredients:
+                    ingredients[recipe_ingredient.ingredient] = {
+                        'quantity': recipe_ingredient.quantity,
+                        'unit': recipe_ingredient.unit
+                    }
+                else:
+                    ingredients[recipe_ingredient.ingredient]['quantity'] += recipe_ingredient.quantity
+        return ingredients
+
+    def __str__(self):
+        """Возвращает строковое представление списка покупок."""
+        return f"Shopping list for {self.user.username} - {self.recipe.title}"

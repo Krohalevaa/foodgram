@@ -31,13 +31,7 @@ urlpatterns = [
     path('', include('recipes.urls')),  # Главное приложение
     path('users/', include('users.urls')),  # URL-ы приложения пользователей
     path('favorites/', include('favorites.urls')),  # URL-ы приложения избранного
-    # path('api/users/', include('users.urls')),
-    # path('api/users/', include('djoser.urls')),
-    # path('api/users/', include('djoser.urls.authtoken')),  # Для работы с токенами
-
-    # path('shoplist/', include('shoplist.urls')),  # URL-ы приложения списка покупок
-    # path('staticpages/', include('staticpages.urls')),  # URL-ы статических страниц
-
+    path('api/', include('users.urls')),
 ]
 
 # Добавьте обработку медиа-файлов в режиме отладки

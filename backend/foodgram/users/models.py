@@ -1,24 +1,31 @@
-# from django.db import models
-
-# # Create your models here.
-from django.contrib.auth.models import AbstractUser
-from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.db import models
 
 
 class User(AbstractUser):
-    nickname = models.CharField(max_length=150, unique=True, blank=True, null=True)
+    """
+    Модель для пользователя, расширяющая стандартную модель AbstractUser.
+    Атрибуты: никнейм пользователя, электронная почта пользователя,
+    имя пользователя, фамилия пользователя, био, аватарка, группы,
+    разрешения
+    """
+    nickname = models.CharField(
+        max_length=150, unique=True, blank=True, null=True)
     email = models.EmailField(unique=True)
-    # Если нужно, можно добавить дополнительные поля для пользователя
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30, blank=True)
+    bio = models.TextField(blank=True, null=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+
     groups = models.ManyToManyField(
         Group,
-        related_name='custom_user_set',  # Уникальное имя для реверса
+        related_name='custom_user_set',
         blank=True,
     )
 
     user_permissions = models.ManyToManyField(
         Permission,
-        related_name='custom_user_permissions_set',  # Уникальное имя для реверса
+        related_name='custom_user_permissions_set',
         blank=True,
     )
 
@@ -27,18 +34,22 @@ class User(AbstractUser):
 
 
 class Subscription(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
-    subscribed_to = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscribers')
+    """
+    Модель для подписки, которая связывает пользователей друг с другом.
+    Атрибуты: пользователь, который подписывается, пользователь, на которого
+    подписываются.
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='subscriptions')
+    subscribed_to = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='subscribers')
 
     class Meta:
         unique_together = ('user', 'subscribed_to')
 
     def __str__(self):
         return f"{self.user.username} -> {self.subscribed_to.username}"
-
-
-# class CustomUser(AbstractUser):
-#     email = models.EmailField(unique=True)
-
-#     def __str__(self):
-#         return self.username

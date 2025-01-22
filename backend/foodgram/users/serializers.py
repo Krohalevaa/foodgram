@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from .models import User
 import base64
 from django.core.files.base import ContentFile
+
+from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -25,6 +26,7 @@ class UserAvatarSerializer(serializers.ModelSerializer):
         if avatar_data:
             format, imgstr = avatar_data.split(';base64,')
             ext = format.split('/')[-1]
-            avatar = ContentFile(base64.b64decode(imgstr), name='avatar.' + ext)
+            avatar = ContentFile(base64.b64decode(imgstr),
+                                 name='avatar.' + ext)
             data['avatar'] = avatar
         return data

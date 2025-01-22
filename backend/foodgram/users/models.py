@@ -3,26 +3,19 @@ from django.db import models
 
 
 class User(AbstractUser):
-    """
-    Модель для пользователя, расширяющая стандартную модель AbstractUser.
-    Атрибуты: никнейм пользователя, электронная почта пользователя,
-    имя пользователя, фамилия пользователя, био, аватарка, группы,
-    разрешения
-    """
-    nickname = models.CharField(
+    """Модель для пользователя, расширяющая стандартную модель AbstractUser."""
+    nickname: models.CharField = models.CharField(
         max_length=150, unique=True, blank=True, null=True)
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
-    bio = models.TextField(blank=True, null=True)
+    bio: models.TextField = models.TextField(blank=True, null=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
-
     groups = models.ManyToManyField(
         Group,
         related_name='custom_user_set',
         blank=True,
     )
-
     user_permissions = models.ManyToManyField(
         Permission,
         related_name='custom_user_permissions_set',
@@ -34,16 +27,12 @@ class User(AbstractUser):
 
 
 class Subscription(models.Model):
-    """
-    Модель для подписки, которая связывает пользователей друг с другом.
-    Атрибуты: пользователь, который подписывается, пользователь, на которого
-    подписываются.
-    """
-    user = models.ForeignKey(
+    """Модель для подписки, которая связывает пользователей друг с другом."""
+    user: models.ForeignKey = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='subscriptions')
-    subscribed_to = models.ForeignKey(
+    subscribed_to: models.ForeignKey = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='subscribers')

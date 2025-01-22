@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from .models import Recipe, Tag, Ingredient
-import base64
 from django.core.files.base import ContentFile
+import base64
+
+from .models import Recipe, Tag, Ingredient
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -26,7 +27,14 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ['id', 'title', 'author', 'description', 'ingredients', 'tags', 'cooking_time', 'image']
+        fields = ['id',
+                  'title',
+                  'author',
+                  'description',
+                  'ingredients',
+                  'tags',
+                  'cooking_time',
+                  'image']
 
     def create(self, validated_data):
         """Кастомная логика для создания рецепта"""
@@ -34,16 +42,14 @@ class RecipeSerializer(serializers.ModelSerializer):
         tags_data = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
 
-        # Добавление ингредиентов
         for ingredient_data in ingredients_data:
             ingredient = Ingredient.objects.create(**ingredient_data)
             recipe.ingredients.add(ingredient)
-        
-        # Добавление тегов
+
         for tag_data in tags_data:
             tag = Tag.objects.create(**tag_data)
             recipe.tags.add(tag)
-        
+
         return recipe
 
     def to_internal_value(self, data):

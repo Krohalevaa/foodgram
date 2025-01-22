@@ -1,10 +1,12 @@
 from rest_framework import viewsets
-from .models import ShopList, Recipe
-from .serializers import ShopListSerializer, RecipeSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
+
+from .models import ShoppingList
+from recipes.models import Recipe
+from .serializers import ShopListSerializer, RecipeSerializer
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -16,8 +18,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 class ShopListViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с моделью Список покупок (CRUD)"""
-
-    queryset = ShopList.objects.all()
+    queryset = ShoppingList.objects.all()
     serializer_class = ShopListSerializer
     permission_classes = [IsAuthenticated]
 
@@ -37,9 +38,9 @@ class ShopListViewSet(viewsets.ModelViewSet):
         shoplist.recipes.remove(recipe)
         return Response({'status': 'recipe removed from shopping list'})
 
+
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с моделью Рецепт (CRUD)."""
-
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthenticated]

@@ -5,21 +5,21 @@ from django.utils.text import slugify
 
 class Recipe(models.Model):
     """Модель для страницы рецепта пользователя."""
-    title = models.CharField(max_length=255)
-    description = models.TextField()
+    title: models.CharField = models.CharField(max_length=255)
+    description: models.TextField = models.TextField()
     image = models.ImageField(upload_to='recipes/',
                               blank=True,
                               null=True)
-    preparation_time = models.PositiveIntegerField()  # минуты
-    author = models.ForeignKey('users.User',
-                               on_delete=models.CASCADE,
-                               related_name='recipes')
-    tags = models.ManyToManyField('Tag',
-                                  related_name='recipes')
-    ingredients = models.ManyToManyField('Ingredient',
-                                         through='RecipeIngredient')
-    slug = models.SlugField(unique=True,
-                            blank=True)
+    preparation_time: models.PositiveIntegerField = models.PositiveIntegerField()  # минуты
+    author: models.ForeignKey = models.ForeignKey('users.User',
+                                                  on_delete=models.CASCADE,
+                                                  related_name='recipes')
+    tags: models.ManyToManyField = models.ManyToManyField(
+        'Tag', related_name='recipes')
+    ingredients: models.ManyToManyField = models.ManyToManyField(
+        'Ingredient', through='RecipeIngredient')
+    slug: models.SlugField = models.SlugField(unique=True,
+                                              blank=True)
 
     def get_short_link(self):
         """Возвращает короткую ссылку на рецепт."""
@@ -38,8 +38,8 @@ class Recipe(models.Model):
 
 class Tag(models.Model):
     """Модель для тега записи."""
-    name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True)
+    name: models.CharField = models.CharField(max_length=100)
+    slug: models.SlugField = models.SlugField(unique=True)
 
     def __str__(self):
         """Возвращает строковое представление тега."""
@@ -50,8 +50,8 @@ class Ingredient(models.Model):
     """
     Модель для ингредиента.
     """
-    name = models.CharField(max_length=100)
-    unit = models.CharField(max_length=50)  # Ед: граммы, литры, шт.
+    name: models.CharField = models.CharField(max_length=100)
+    unit: models.CharField = models.CharField(max_length=50)  # Ед: граммы, литры, шт.
 
     def __str__(self):
         """Возвращает строковое представление ингредиента."""
@@ -60,9 +60,11 @@ class Ingredient(models.Model):
 
 class RecipeIngredient(models.Model):
     """Модель для связи между рецептом и ингредиентом."""
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    quantity = models.FloatField()  # Количество ингредиента
+    recipe: models.ForeignKey = models.ForeignKey(Recipe,
+                                                  on_delete=models.CASCADE)
+    ingredient: models.ForeignKey = models.ForeignKey(Ingredient,
+                                                      on_delete=models.CASCADE)
+    quantity: models.FloatField = models.FloatField()  # Количество ингредиента
 
     def __str__(self):
         """Возвращает строковое представление связи рецепта и ингредиента."""

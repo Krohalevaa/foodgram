@@ -3,12 +3,12 @@ from django.db import models
 
 class ShoppingList(models.Model):
     """Модель для списка покупок, где пользователь может добавлять рецепты."""
-    user = models.ForeignKey('users.User',
-                             on_delete=models.CASCADE,
-                             related_name='shopping_lists')
-    recipe = models.ForeignKey('recipes.Recipe',
-                               on_delete=models.CASCADE,
-                               related_name='shopping_lists')
+    user: models.ForeignKey = models.ForeignKey('users.User',
+                                                on_delete=models.CASCADE,
+                                                related_name='shop_lists')
+    recipe: models.ForeignKey = models.ForeignKey('recipes.Recipe',
+                                                  on_delete=models.CASCADE,
+                                                  related_name='shop_lists')
 
     class Meta:
         """Класс для уникальности сочетания пользователя и рецепта в списке."""
@@ -25,7 +25,9 @@ class ShoppingList(models.Model):
                         'unit': recipe_ingredient.unit
                     }
                 else:
-                    ingredients[recipe_ingredient.ingredient]['quantity'] += recipe_ingredient.quantity
+                    ingredients[
+                        recipe_ingredient.ingredient][
+                            'quantity'] += recipe_ingredient.quantity
         return ingredients
 
     def __str__(self):

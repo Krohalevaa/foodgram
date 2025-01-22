@@ -1,7 +1,9 @@
 from rest_framework import serializers
-from .models import ShopList, Recipe
 import base64
 from django.core.files.base import ContentFile
+
+from .models import ShoppingList
+from recipes.models import Recipe
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -12,7 +14,14 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ['id', 'author', 'title', 'image', 'description', 'ingredients', 'tags', 'cooking_time']
+        fields = ['id',
+                  'author',
+                  'title',
+                  'image',
+                  'description',
+                  'ingredients',
+                  'tags',
+                  'cooking_time']
 
 
 class ShopListSerializer(serializers.ModelSerializer):
@@ -22,7 +31,7 @@ class ShopListSerializer(serializers.ModelSerializer):
     """
 
     class Meta:
-        model = ShopList
+        model = ShoppingList
         fields = ['user', 'recipes']
 
 
@@ -35,8 +44,7 @@ class Base64ImageField(serializers.ImageField):
     def to_internal_value(self, data):
         """Переводит строку base64 в изображение и сохраняет его как файл."""
         if isinstance(data, str) and data.startswith('data:image'):
-            # Извлечение содержимого изображения из строки base64
-            format, imgstr = data.split(';base64,')  # Разделяем строку по формату и содержимому
-            ext = format.split('/')[1]  # Извлекаем формат изображения (jpeg, png)
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[1]
             data = ContentFile(base64.b64decode(imgstr), name=f'temp.{ext}')
         return super().to_internal_value(data)

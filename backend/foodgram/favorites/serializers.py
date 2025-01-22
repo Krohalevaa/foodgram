@@ -1,25 +1,27 @@
 from rest_framework import serializers
-from .models import FavoriteRecipe
 from django.core.files.base import ContentFile
-from io import BytesIO
+import base64
 
-# Сериализатор для модели Favorite
+from .models import FavoriteRecipe
+
+
 class FavoriteSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Favorite"""
     class Meta:
         model = FavoriteRecipe
         fields = ['user', 'recipe', 'created_at']
 
-    # Добавление кастомной логики для сериализации картинки
     def to_internal_value(self, data):
-        # Проверка на base64 строку
+        """Добавление кастомной логики для сериализации картинки"""
         if 'image' in data:
             image_data = base64.b64decode(data['image'])
             file_name = 'image.png'
             data['image'] = ContentFile(image_data, name=file_name)
         return super().to_internal_value(data)
 
-# Сериализатор для работы с изображениями
+
 class RecipeImageSerializer(serializers.ModelSerializer):
+    """Сериализатор для работы с изображениями"""
     class Meta:
         model = FavoriteRecipe
         fields = ['title', 'image']

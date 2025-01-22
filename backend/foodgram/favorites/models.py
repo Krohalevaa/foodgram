@@ -2,7 +2,7 @@ from django.db import models
 
 
 class FavoriteRecipe(models.Model):
-    """Модель для избранных рецептов, которые сохраняются пользователем."""
+    """Модель для избранных рецептов от пользователя."""
     user = models.ForeignKey('users.User',
                              on_delete=models.CASCADE,
                              related_name='favorite_recipes')

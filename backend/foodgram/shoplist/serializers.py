@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import ShopList, Recipe
 import base64
 from django.core.files.base import ContentFile
-from io import BytesIO
+
 
 class RecipeSerializer(serializers.ModelSerializer):
     """

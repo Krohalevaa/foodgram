@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'recipes.apps.RecipesConfig',
     'shoplist.apps.ShoplistConfig',
     'users.apps.UsersConfig',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -58,6 +59,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'foodgram.urls'
@@ -169,3 +172,10 @@ DJOSER = {
         'current_user': 'users.serializers.UserSerializer',
     },
 }
+
+# CORS_ORIGIN_ALLOW_ALL = True
+CORS_URLS_REGEX = r'^/api/.*$' 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    "http://localhost:8000",
+]

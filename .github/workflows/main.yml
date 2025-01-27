@@ -121,7 +121,7 @@ jobs:
           # context: ./nginx/
           context: ./infra/
           push: true
-          tags: krohalevaa/foodgram_nginx:latest
+          tags: krohalevaa/foodgram_infra:latest
 
   # deploy:
   #   if: github.ref == 'refs/heads/main'

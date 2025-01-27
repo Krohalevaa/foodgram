@@ -2,6 +2,7 @@ import base64
 
 from rest_framework import serializers
 from django.core.files.base import ContentFile
+from djoser.serializers import UserCreateSerializer
 
 from .models import User
 
@@ -31,3 +32,8 @@ class UserAvatarSerializer(serializers.ModelSerializer):
                                  name='avatar.' + ext)
             data['avatar'] = avatar
         return data
+
+
+class UserCreateSerializer(UserCreateSerializer):
+    class Meta(UserCreateSerializer.Meta):
+        fields = ('id', 'email', 'username', 'password')

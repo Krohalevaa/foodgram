@@ -1,18 +1,26 @@
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
-# from django.conf import settings
-# from djoser.views import TokenCreateView
+from favorites.views import FavoriteViewSet
+from recipes.views import RecipeViewSet, TagViewSet, IngredientViewSet
+from shoplist.views import ShopListViewSet, RecipeViewSet
+from users.views import UserViewSet
 
+router = DefaultRouter()
+router.register(r'recipes', RecipeViewSet)
+router.register(r'tags', TagViewSet)
+router.register(r'ingredients', IngredientViewSet)
+router.register(r'favorites', FavoriteViewSet, basename='favorite')
+router.register(r'shoplist', ShopListViewSet)
+router.register(r'recipes', RecipeViewSet)
+router.register(r'users', UserViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('users.urls')),  # Подключаем API пользователей
-    path('api/', include('recipes.urls')),  # API рецептов
-    path('api/', include('favorites.urls')),  # API избранного
+    path('api/', include(router.urls)),
     path('api/auth/', include('djoser.urls')),  # Маршруты djoser
     path('api/auth/', include('djoser.urls.authtoken')),
-    # path('signin/', TokenCreateView.as_view(), name='signin'),  # Эндпоинт для аутентификации
 ]
 # Обработка медиа-файлов в режиме отладки
 # if settings.DEBUG:

@@ -154,6 +154,6 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CSV_FILES_DIR = os.path.join(BASE_DIR, 'data')
 
-# CSRF_TRUSTED_ORIGINS = ['https://foodgram-net.hopto.org']
+CSRF_TRUSTED_ORIGINS = ['https://foodgram-net.hopto.org']
 # CSRF_FAILURE_VIEW = 'foodgram.views.csrf_failure'
 # CSRF_COOKIE_SECURE = False

@@ -11,7 +11,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '89.169.161.149',
-    'foodgram-net.hopto.org'
+    'foodgram-net.hopto.org',
 ]
 
 INSTALLED_APPS = [
@@ -132,12 +132,12 @@ REST_FRAMEWORK = {
 
 DJOSER = {
     'LOGIN_FIELD': 'username',
-    # 'USER_CREATE_PASSWORD_RETYPE': True,
-    # 'USERNAME_CHANGED_EMAIL_CONFIRMATION': False,
-    # 'PASSWORD_CHANGED_EMAIL_CONFIRMATION': False,
-    # 'SEND_CONFIRMATION_EMAIL': False,
-    # 'SET_PASSWORD_RETYPE': True,
-    # 'PASSWORD_RESET_CONFIRM_RETYPE': True,
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    'USERNAME_CHANGED_EMAIL_CONFIRMATION': False,
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': False,
+    'SEND_CONFIRMATION_EMAIL': False,
+    'SET_PASSWORD_RETYPE': True,
+    'PASSWORD_RESET_CONFIRM_RETYPE': True,
     'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',
     'SERIALIZERS': {
         'user_create': 'users.serializers.UserCreateSerializer',
@@ -150,5 +150,8 @@ DJOSER = {
 CORS_URLS_REGEX = r'^/api/.*$' 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    # "http://localhost:8000",
+    "http://localhost:8000",
+    "https://foodgram-net.hopto.org",
 ]
+CSV_FILES_DIR = os.path.join(BASE_DIR, 'data')
+# CSRF_TRUSTED_ORIGINS = ['https://foodgram-net.hopto.org']

@@ -14,7 +14,8 @@ services:
     depends_on:
       - db
     volumes:
-      - static:/app/collected_static 
+      - static:/backend_static
+      # - static:/app/collected_static 
   frontend:
     image: krohalevaa/foodgram_front
     env_file: .env

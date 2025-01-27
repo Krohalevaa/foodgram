@@ -24,7 +24,6 @@ INSTALLED_APPS = [
     'djoser',
     'rest_framework',
     'rest_framework.authtoken',
-    
 
     'favorites.apps.FavoritesConfig',
     'recipes.apps.RecipesConfig',
@@ -147,7 +146,7 @@ DJOSER = {
     },
 }
 
-CORS_URLS_REGEX = r'^/api/.*$' 
+CORS_URLS_REGEX = r'^/api/.*$'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     "http://localhost:8000",

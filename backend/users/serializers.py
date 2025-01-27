@@ -1,5 +1,6 @@
-from rest_framework import serializers
 import base64
+
+from rest_framework import serializers
 from django.core.files.base import ContentFile
 
 from .models import User

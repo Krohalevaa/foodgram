@@ -3,8 +3,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import User
-from .serializers import UserSerializer, UserAvatarSerializer
+from .serializers import UserSerializer, UserAvatarSerializer, RegisterSerializer, ChangePasswordSerializer
 from .permissions import IsOwnerOrReadOnly
+
+from rest_framework import generics, permissions
+# from django.contrib.auth import get_user_model
+# from .serializers import UserSerializer, RegisterSerializer, ChangePasswordSerializer
+from rest_framework.permissions import IsAuthenticated
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -44,3 +49,27 @@ class UserViewSet(viewsets.ModelViewSet):
         user = request.user
         user.subscriptions.remove(user_to_unsubscribe)
         return Response({"status": "unsubscribed successfully"})
+
+
+class RegisterView(generics.CreateAPIView):
+    """Регистрация пользователя"""
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
+    permission_classes = (permissions.AllowAny,)
+
+
+class UserDetailView(generics.RetrieveAPIView):
+    """Просмотр профиля пользователя"""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated,)
+
+
+class ChangePasswordView(generics.UpdateAPIView):
+    """Смена пароля"""
+    serializer_class = ChangePasswordSerializer
+    model = User
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user

@@ -13,7 +13,6 @@ router.register(r'tags', TagViewSet)
 router.register(r'ingredients', IngredientViewSet)
 router.register(r'favorites', FavoriteViewSet, basename='favorite')
 router.register(r'shoplist', ShopListViewSet)
-# router.register(r'recipes', RecipeViewSet)
 router.register(r'users', UserViewSet)
 
 urlpatterns = [

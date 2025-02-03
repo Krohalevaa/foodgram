@@ -1,7 +1,10 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
+from django.shortcuts import render
+from django_filters.rest_framework import DjangoFilterBackend
+from recipes.filters import IngredientFilter
 
 from .models import User, Recipe, Tag, Ingredient, FavoriteRecipe, ShoppingList
 from .serializers import (
@@ -10,6 +13,18 @@ from .serializers import (
     ShoppingListSerializer
 )
 
+class IngredientViewSet(viewsets.ModelViewSet):
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    permission_classes = [permissions.AllowAny]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = IngredientFilter
+
+
+class TagViewSet(viewsets.ModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    permission_classes = [permissions.AllowAny]
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -43,18 +58,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, pk=pk)
         ShoppingList.objects.get_or_create(user=request.user, recipe=recipe)
         return Response({'status': 'Рецепт добавлен в список покупок'})
+    
+    def create_recipe(request):
+        ingredients = Ingredient.objects.all()
+        return render(request, 'recipes/create_recipe.html', {'ingredients': ingredients})
 
 
-class TagViewSet(viewsets.ModelViewSet):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-    permission_classes = [permissions.AllowAny]
-
-
-class IngredientViewSet(viewsets.ModelViewSet):
-    queryset = Ingredient.objects.all()
-    serializer_class = IngredientSerializer
-    permission_classes = [permissions.AllowAny]
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):

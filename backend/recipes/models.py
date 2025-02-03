@@ -81,6 +81,10 @@ class Tag(models.Model):
         max_length=100,
         unique=True,
         verbose_name='Слаг')
+    color: models.CharField = models.CharField(
+        max_length=7,
+        verbose_name="Цвет в HEX",
+        default="#FFFFFF")  # Например, #FF0000
 
     class Meta:
         verbose_name = 'Тег'
@@ -102,9 +106,10 @@ class Recipe(models.Model):
         blank=True,
         null=True)
     image = models.ImageField(
-        upload_to='recipes/',
+        upload_to='recipes/images/',
         verbose_name='Фото рецепта',
-        blank=True)
+        blank=True,
+        null=True)
     preparation_time: models.PositiveIntegerField = models.PositiveIntegerField(
         verbose_name='Время приготовления рецепта в минутах',)
     author: models.ForeignKey = models.ForeignKey(

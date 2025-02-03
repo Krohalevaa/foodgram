@@ -107,8 +107,20 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',  # Только JSON
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.MultiPartParser',
+    ],
+
+    'DEFAULT_PAGINATION_CLASS': None,  # Отключаем пагинацию по умолчанию
     'PAGE_SIZE': 6,
+
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # 'PAGE_SIZE': 6,
+
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+
 }
 
 DJOSER = {
@@ -144,6 +156,7 @@ AUTHENTICATION_BACKENDS = (
 
 AUTH_USER_MODEL = 'recipes.User'
 
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # DJOSER = {

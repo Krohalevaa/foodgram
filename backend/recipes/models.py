@@ -1,8 +1,8 @@
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from django.urls import reverse
-# from django.utils.text import slugify
 from django.core.validators import MinValueValidator
+from datetime import date
 
 
 class User(AbstractUser):
@@ -84,7 +84,7 @@ class Tag(models.Model):
     color: models.CharField = models.CharField(
         max_length=7,
         verbose_name="Цвет в HEX",
-        default="#FFFFFF")  # Например, #FF0000
+        default="#FFFFFF") 
 
     class Meta:
         verbose_name = 'Тег'
@@ -97,10 +97,10 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     """Модель для страницы рецепта пользователя."""
-    title: models.CharField = models.CharField(
+    name: models.CharField = models.CharField(
         max_length=255,
         verbose_name='Заголовок рецепта')
-    description: models.TextField = models.TextField(
+    text: models.TextField = models.TextField(
         max_length=255,
         verbose_name='Описание рецепта',
         blank=True,
@@ -110,7 +110,7 @@ class Recipe(models.Model):
         verbose_name='Фото рецепта',
         blank=True,
         null=True)
-    preparation_time: models.PositiveIntegerField = models.PositiveIntegerField(
+    cooking_time: models.PositiveIntegerField = models.PositiveIntegerField(
         verbose_name='Время приготовления рецепта в минутах',)
     author: models.ForeignKey = models.ForeignKey(
         User,
@@ -129,7 +129,8 @@ class Recipe(models.Model):
     slug: models.SlugField = models.SlugField(
         unique=True,
         blank=True)
-    creation_date: models.DateTimeField = models.DateTimeField(
+    creation_date: models.DateField = models.DateField(
+        auto_now_add=True,
         verbose_name='Дата создания рецепта')
 
     class Meta:
@@ -144,11 +145,11 @@ class Recipe(models.Model):
     # def save(self, *args, **kwargs):
     #     """Переопределенный метод сохранения экземпляра модели."""
     #     if not self.slug:
-    #         self.slug = slugify(self.title)
+    #         self.slug = slugify(self.name)
     #     super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.title
+        return self.name
 
 
 class RecipeIngredient(models.Model):
@@ -214,7 +215,7 @@ class FavoriteRecipe(models.Model):
                
 
     def __str__(self):
-        return f"{self.user.username} -> {self.recipe.title}"
+        return f"{self.user.username} -> {self.recipe.name}"
 
 
 class ShoppingList(models.Model):
@@ -251,7 +252,7 @@ class ShoppingList(models.Model):
     #     return ingredients
 
     def __str__(self):
-        return f"Список покупок для {self.user.username}: {self.recipe.title}"
+        return f"Список покупок для {self.user.username}: {self.recipe.name}"
 
 
 class Subscription(models.Model):

@@ -13,6 +13,7 @@ from .serializers import (
     ShoppingListSerializer
 )
 
+
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -25,6 +26,7 @@ class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [permissions.AllowAny]
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -40,10 +42,12 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(user)
         return Response(serializer.data)
 
+
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    # permission_classes = [permissions.AllowAny]
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, pk=None):
@@ -58,12 +62,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, pk=pk)
         ShoppingList.objects.get_or_create(user=request.user, recipe=recipe)
         return Response({'status': 'Рецепт добавлен в список покупок'})
-    
+
     def create_recipe(request):
         ingredients = Ingredient.objects.all()
         return render(request, 'recipes/create_recipe.html', {'ingredients': ingredients})
-
-
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):

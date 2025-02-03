@@ -104,27 +104,15 @@ REST_FRAMEWORK = {
         # 'rest_framework.permissions.IsAuthenticated',
         'rest_framework.permissions.AllowAny',
     ],
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',  # Только JSON
-    ),
-
-    'DEFAULT_PARSER_CLASSES': [
-        'rest_framework.parsers.JSONParser',
-        'rest_framework.parsers.MultiPartParser',
-    ],
-
-    'DEFAULT_PAGINATION_CLASS': None,  # Отключаем пагинацию по умолчанию
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    # 'DEFAULT_PAGINATION_CLASS': None,
     'PAGE_SIZE': 6,
-
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    # 'PAGE_SIZE': 6,
 
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 
 }
 
 DJOSER = {
-    # 'LOGIN_FIELD': 'username',
     'LOGIN_FIELD': 'email',
     # 'USER_CREATE_PASSWORD_RETYPE': True,
     'USER_CREATE_PASSWORD_RETYPE': False,  # Отключить повторный ввод пароля
@@ -138,7 +126,6 @@ DJOSER = {
     },
 }
 
-# DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_URLS_REGEX = r'^/api/.*$'
 CORS_ALLOWED_ORIGINS = [
@@ -146,9 +133,6 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000', 
 ]
 
-# AUTHENTICATION_BACKENDS = (
-#     'django.contrib.auth.backends.ModelBackend',  # Стандартный бэкэнд
-# )
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',  # Стандартный бэкэнд
     'recipes.backends.EmailAuthBackend',  # Кастомный бэкэнд для email
@@ -193,7 +177,7 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
-        'foodgram': {  # Название вашего проекта
+        'foodgram': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,

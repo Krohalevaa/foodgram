@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, get_user_model
 from djoser.serializers import UserCreateSerializer
 from .models import Recipe, Ingredient, Tag, RecipeIngredient, FavoriteRecipe, ShoppingList, Subscription
 from rest_framework.response import Response
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -84,16 +85,21 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    author = UserSerializer(read_only=True)
+    # author = UserSerializer(read_only=True)
+    author = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        default=serializers.CurrentUserDefault())
+
     tags = TagSerializer(many=True, read_only=True)
     ingredients = RecipeIngredientSerializer(many=True, source='ingredient_for_recipe', read_only=True)
-    # image = serializers.ImageField(required=True)  
     image = Base64ImageField(required=True)
-
+    creation_date = serializers.DateField(required=False)
 
     class Meta:
         model = Recipe
-        fields = ('id', 'title', 'description', 'image', 'preparation_time', 'author', 'tags', 'ingredients', 'slug', 'creation_date')
+        fields = '__all__'
+        # fields = ('id', 'name', 'description', 'image', 'preparation_time', 'author', 'tags', 'ingredients', 'slug', 'creation_date')
+    
     
 
 class FavoriteRecipeSerializer(serializers.ModelSerializer):

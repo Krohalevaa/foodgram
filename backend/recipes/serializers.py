@@ -8,6 +8,7 @@ from .models import Recipe, Ingredient, Tag, RecipeIngredient, FavoriteRecipe, S
 from rest_framework.response import Response
 from django.utils import timezone
 
+
 User = get_user_model()
 
 
@@ -99,8 +100,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = '__all__'
         # fields = ('id', 'name', 'description', 'image', 'preparation_time', 'author', 'tags', 'ingredients', 'slug', 'creation_date')
-    
-    
+
 
 class FavoriteRecipeSerializer(serializers.ModelSerializer):
     class Meta:

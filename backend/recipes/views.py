@@ -12,6 +12,8 @@ from .serializers import (
     IngredientSerializer, FavoriteRecipeSerializer,
     ShoppingListSerializer
 )
+from .pagination import CustomPagination
+from rest_framework.pagination import LimitOffsetPagination
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -32,6 +34,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
+    pagination_class = LimitOffsetPagination
 
     @action(detail=False, 
             methods=['get'], 
@@ -47,6 +50,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    pagination_class = CustomPagination
     # permission_classes = [permissions.AllowAny]
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])

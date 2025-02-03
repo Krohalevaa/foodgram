@@ -2,7 +2,6 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from django.urls import reverse
 from django.core.validators import MinValueValidator
-from datetime import date
 
 
 class User(AbstractUser):
@@ -142,12 +141,6 @@ class Recipe(models.Model):
         """Возвращает короткую ссылку на рецепт."""
         return reverse('recipe_detail', kwargs={'slug': self.slug})
 
-    # def save(self, *args, **kwargs):
-    #     """Переопределенный метод сохранения экземпляра модели."""
-    #     if not self.slug:
-    #         self.slug = slugify(self.name)
-    #     super().save(*args, **kwargs)
-
     def __str__(self):
         return self.name
 
@@ -211,8 +204,6 @@ class FavoriteRecipe(models.Model):
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
         unique_together = ('user', 'recipe')
-
-               
 
     def __str__(self):
         return f"{self.user.username} -> {self.recipe.name}"

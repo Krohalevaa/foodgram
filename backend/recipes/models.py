@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from django.urls import reverse
 from django.core.validators import MinValueValidator
+from slugify import slugify
+
 
 
 class User(AbstractUser):
@@ -26,11 +28,11 @@ class User(AbstractUser):
     # bio: models.TextField = models.TextField(
     #     max_length=150,
     #     verbose_name='Описание пользователя')
-    # avatar = models.ImageField(
-    #     upload_to='avatars/',
-    #     blank=True,
-    #     null=True,
-    #     verbose_name='Аватар пользователя')
+    avatar = models.ImageField(
+        upload_to='avatars/',
+        blank=True,
+        null=True,
+        verbose_name='Аватар пользователя')
     groups = models.ManyToManyField(
         Group,
         related_name='custom_user_set',
@@ -140,6 +142,17 @@ class Recipe(models.Model):
     def get_short_link(self):
         """Возвращает короткую ссылку на рецепт."""
         return reverse('recipe_detail', kwargs={'slug': self.slug})
+ 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            while Recipe.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

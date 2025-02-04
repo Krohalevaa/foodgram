@@ -1,4 +1,5 @@
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions, filters, status
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
@@ -30,20 +31,34 @@ class TagViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.AllowAny]
 
 
+class UserAvatarUpdateView(generics.UpdateAPIView):
+    """Эндпоинт для обновления аватара пользователя."""
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+    def put(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
     pagination_class = LimitOffsetPagination
 
-    @action(detail=False, 
-            methods=['get'], 
+    @action(detail=False,
+            methods=['get'],
             permission_classes=[permissions.AllowAny])
             # permission_classes=[IsAuthenticated])
     def me(self, request):
         user = request.user
         serializer = self.get_serializer(user)
         return Response(serializer.data)
+
+
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -70,6 +85,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def create_recipe(request):
         ingredients = Ingredient.objects.all()
         return render(request, 'recipes/create_recipe.html', {'ingredients': ingredients})
+    
+    @action(detail=True, methods=['get'])
+    def get_link(self, request, pk=None):
+        """Возвращает короткую ссылку на рецепт."""
+        recipe = self.get_object()
+        return Response({"short_link": recipe.get_short_link()})
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):

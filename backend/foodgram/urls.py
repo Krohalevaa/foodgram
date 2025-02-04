@@ -11,8 +11,9 @@ router.register(r'recipes', RecipeViewSet)
 router.register(r'tags', TagViewSet)
 router.register(r'ingredients', IngredientViewSet)
 router.register(r'favorites', FavoriteViewSet)
-router.register(r'shoplist', ShopListViewSet)
+# router.register(r'shoplist', ShopListViewSet)
 router.register(r'users', UserViewSet)
+router.register(r'shopping_cart', ShopListViewSet)
 
 
 urlpatterns = [

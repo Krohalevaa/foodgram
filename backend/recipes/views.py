@@ -3,9 +3,14 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import (
+    AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
+)
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from recipes.filters import IngredientFilter
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 
 from .models import User, Recipe, Tag, Ingredient, FavoriteRecipe, ShoppingList
 from .serializers import (
@@ -59,14 +64,23 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-
-
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = CustomPagination
     # permission_classes = [permissions.AllowAny]
+
+    def get_serializer_context(self):
+        """Передаем request в контекст сериализатора"""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
+    @action(detail=True, methods=['get'], url_path='get-link')
+    def get_link(self, request, pk=None):
+        recipe = self.get_object()
+        return Response({"short_link": f"/api/recipes/{recipe.slug}/"})
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, pk=None):
@@ -76,7 +90,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response({'status': 'Рецепт добавлен в избранное'})
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
-    def add_to_shopping_list(self, request, pk=None):
+    def shopping_cart(self, request, pk=None):
         """Добавление рецепта в список покупок"""
         recipe = get_object_or_404(Recipe, pk=pk)
         ShoppingList.objects.get_or_create(user=request.user, recipe=recipe)
@@ -85,12 +99,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def create_recipe(request):
         ingredients = Ingredient.objects.all()
         return render(request, 'recipes/create_recipe.html', {'ingredients': ingredients})
-    
+
     @action(detail=True, methods=['get'])
-    def get_link(self, request, pk=None):
-        """Возвращает короткую ссылку на рецепт."""
+    def get_ingredients(self, request, pk=None):
+        """Возвращает ингредиенты рецепта"""
         recipe = self.get_object()
-        return Response({"short_link": recipe.get_short_link()})
+        ingredients = recipe.ingredients.all()
+        ingredients_serializer = IngredientSerializer(ingredients, many=True)
+        return Response(ingredients_serializer.data)
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):

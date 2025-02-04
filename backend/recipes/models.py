@@ -139,10 +139,6 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
         ordering = ('creation_date',)
 
-    def get_short_link(self):
-        """Возвращает короткую ссылку на рецепт."""
-        return reverse('recipe_detail', kwargs={'slug': self.slug})
- 
     def save(self, *args, **kwargs):
         if not self.slug:
             base_slug = slugify(self.name)

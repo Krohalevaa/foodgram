@@ -63,6 +63,15 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(user)
         return Response(serializer.data)
     
+    @action(detail=False, methods=['post'])
+    def set_password(self, request):
+        user = request.user
+        new_password = request.data.get("new_password")
+        if not new_password:
+            return Response({"error": "Новый пароль обязателен"}, status=400)
+        user.set_password(new_password)
+        user.save()
+        return Response({"status": "Пароль успешно изменён"}, status=200)
     
 
 

@@ -115,6 +115,7 @@ REST_FRAMEWORK = {
 DJOSER = {
     'LOGIN_FIELD': 'email',
     # 'USER_CREATE_PASSWORD_RETYPE': True,
+    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
     'USER_CREATE_PASSWORD_RETYPE': False,  # Отключить повторный ввод пароля
     'SEND_ACTIVATION_EMAIL': False,  # Отключить активацию по email
     'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',

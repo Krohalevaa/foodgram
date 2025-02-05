@@ -234,6 +234,7 @@ class ShoppingList(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+        unique_together = ('user', 'recipe')
 
     # def get_shopping_list(self):
     #     """Получить список ингредиентов для рецептов в списке покупок."""

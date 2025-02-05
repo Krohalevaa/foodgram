@@ -12,7 +12,7 @@ from recipes.filters import IngredientFilter
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 
-from .models import User, Recipe, Tag, Ingredient, FavoriteRecipe, ShoppingList
+from .models import User, Recipe, Tag, Ingredient, FavoriteRecipe, ShoppingList, RecipeIngredient
 from .serializers import (
     UserSerializer, RecipeSerializer, TagSerializer,
     IngredientSerializer, FavoriteRecipeSerializer,
@@ -20,6 +20,9 @@ from .serializers import (
 )
 from .pagination import CustomPagination
 from rest_framework.pagination import LimitOffsetPagination
+
+from django.http import HttpResponse
+from collections import defaultdict
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -77,10 +80,13 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
+    # queryset = Recipe.objects.prefetch_related('ingredient_for_recipe__ingredient')
     serializer_class = RecipeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = CustomPagination
     # permission_classes = [permissions.AllowAny]
+
+    
 
     def get_serializer_context(self):
         """Передаем request в контекст сериализатора"""
@@ -96,6 +102,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if request.user.is_authenticated and is_favorited == "1":
             queryset = queryset.filter(favorite_recipes__user=request.user)
         return queryset
+    
+    @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
+    def shopping_cart(self, request, pk=None):
+        """Добавление/удаление рецепта из списка покупок."""
+        recipe = get_object_or_404(Recipe, pk=pk)
+        if request.method == 'POST':
+            ShoppingList.objects.get_or_create(user=request.user, recipe=recipe)
+            return Response({'status': 'Рецепт добавлен в список покупок'}, status=status.HTTP_201_CREATED)
+        elif request.method == 'DELETE':
+            ShoppingList.objects.filter(user=request.user, recipe=recipe).delete()
+            return Response({'status': 'Рецепт удален из списка покупок'}, status=status.HTTP_204_NO_CONTENT)
 
 
     
@@ -180,3 +197,22 @@ class ShopListViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
+
+
+class ShoppingCartDownloadViewSet(viewsets.ViewSet):
+    """Скачивание списка покупок."""
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        shopping_list = ShoppingList.objects.filter(user=request.user)
+        ingredients = defaultdict(float)
+
+        for item in shopping_list:
+            for recipe_ingredient in item.recipe.ingredient_for_recipe.all():
+                ingredient = recipe_ingredient.ingredient
+                ingredients[f"{ingredient.name} ({ingredient.unit})"] += recipe_ingredient.quantity
+
+        content = "\n".join(f"{name} — {amount}" for name, amount in ingredients.items())
+        response = HttpResponse(content, content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+        return response

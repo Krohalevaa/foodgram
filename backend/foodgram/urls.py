@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from recipes.views import RecipeViewSet, TagViewSet, IngredientViewSet, UserViewSet, FavoriteViewSet, ShopListViewSet, UserAvatarUpdateView
+from recipes.views import RecipeViewSet, TagViewSet, IngredientViewSet, UserViewSet, FavoriteViewSet, ShopListViewSet, UserAvatarUpdateView, ShoppingCartDownloadViewSet
 from django.conf import settings
 
 
@@ -23,6 +23,9 @@ urlpatterns = [
     path('api/users/me/', UserViewSet.as_view({'get': 'retrieve'}), name='user-me'),
     path('api/users/me/avatar/', UserAvatarUpdateView.as_view(), name='user-avatar-update'),
     path('api/auth/', include('djoser.urls.authtoken')),
+    # router.register(r'shopping_cart', ShoppingListViewSet, basename='shopping_cart')
+    # router.register(r'shopping_cart/download', ShoppingCartDownloadViewSet, basename='shopping_cart_download')
+
 ]
 
 

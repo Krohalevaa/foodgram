@@ -62,6 +62,8 @@ class UserViewSet(viewsets.ModelViewSet):
         user = request.user
         serializer = self.get_serializer(user)
         return Response(serializer.data)
+    
+    
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -77,17 +79,61 @@ class RecipeViewSet(viewsets.ModelViewSet):
         context['request'] = self.request
         return context
     
+    def get_queryset(self):
+        """Фильтруем рецепты по избранному, если передан параметр favorite=true"""
+        queryset = Recipe.objects.all()
+        request = self.request
+        is_favorited = request.query_params.get("is_favorited")
+        if request.user.is_authenticated and is_favorited == "1":
+            queryset = queryset.filter(favorite_recipes__user=request.user)
+        return queryset
+
+
+    
+
+
+
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_link(self, request, pk=None):
         recipe = self.get_object()
         return Response({"short_link": f"/api/recipes/{recipe.slug}/"})
-
-    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    
+    @action(detail=True, methods=['post', 'delete'], permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, pk=None):
-        """Добавление рецепта в избранное"""
+        """Добавление или удаление рецепта в/из избранного.
+        POST - добавление,
+        DELETE - удаление."""
         recipe = get_object_or_404(Recipe, pk=pk)
-        FavoriteRecipe.objects.get_or_create(user=request.user, recipe=recipe)
-        return Response({'status': 'Рецепт добавлен в избранное'})
+        
+        if request.method == 'POST':
+            # Добавление рецепта в избранное
+            FavoriteRecipe.objects.get_or_create(user=request.user, recipe=recipe)
+            return Response({'status': 'Рецепт добавлен в избранное'})
+        
+        elif request.method == 'DELETE':
+            # Удаление рецепта из избранного
+            favorite = FavoriteRecipe.objects.filter(user=request.user, recipe=recipe)
+            if favorite.exists():
+                favorite.delete()
+                return Response({'status': 'Рецепт удалён из избранного'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'error': 'Рецепт не найден в избранном'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    # def favorite(self, request, pk=None):
+    #     """Добавление рецепта в избранное"""
+    #     recipe = get_object_or_404(Recipe, pk=pk)
+    #     FavoriteRecipe.objects.get_or_create(user=request.user, recipe=recipe)
+    #     return Response({'status': 'Рецепт добавлен в избранное'})
+    
+    # @action(detail=True, methods=['delete'], permission_classes=[permissions.IsAuthenticated])
+    # def unfavorite(self, request, pk=None):
+    #     """Удаление рецепта из избранного"""
+    #     recipe = get_object_or_404(Recipe, pk=pk)
+    #     favorite = FavoriteRecipe.objects.filter(user=request.user, recipe=recipe)
+    #     if favorite.exists():
+    #         favorite.delete()
+    #         return Response({'status': 'Рецепт удалён из избранного'}, status=status.HTTP_204_NO_CONTENT)
+    #     return Response({'error': 'Рецепт не найден в избранном'}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def shopping_cart(self, request, pk=None):

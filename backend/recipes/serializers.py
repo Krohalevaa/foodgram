@@ -37,24 +37,7 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
-class UserSerializer(serializers.ModelSerializer):
-    avatar = Base64ImageField(required=False, allow_null=True)
 
-    class Meta:
-        model = User
-        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'password', 'avatar')
-    
-    # def validate(self, attrs):
-    #     if not attrs.get('username'):
-    #         raise serializers.ValidationError({"username": "Это поле обязательно."})
-    #     return attrs
-    
-    def update(self, instance, validated_data):
-        # Обновляем только переданные поля
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        return instance
 
 
 class UserCreateSerializer(UserCreateSerializer):
@@ -96,9 +79,13 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     # author = UserSerializer(read_only=True)
-    author = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
-        default=serializers.CurrentUserDefault())
+    author = serializers.SerializerMethodField()
+    # author = serializers.PrimaryKeyRelatedField(
+    #     queryset=User.objects.all(),
+    #     default=serializers.CurrentUserDefault()
+    #     )
+    # author = UserSerializer(read_only=True)
+
     slug = serializers.SlugField(required=False)
     tags = TagSerializer(required=False, many=True, read_only=True)
     ingredients = RecipeIngredientSerializer(many=True, source='ingredient_for_recipe', read_only=True)
@@ -111,6 +98,20 @@ class RecipeSerializer(serializers.ModelSerializer):
         # fields = ('id', 'name', 'image', 'cooking_time', 'is_favorite')
 
         fields = '__all__'
+
+    
+    
+    def get_author(self, obj):
+        # Получаем автора через поле автор (например, user)
+        author = obj.author
+        return {
+            "id": author.id,
+            "username": author.username,
+            "first_name": author.first_name,
+            "last_name": author.last_name,
+            'avatar': obj.author.avatar.url if obj.author.avatar else None
+            # Можно добавить другие поля, например, avatar
+        }
     
     def get_is_favorited(self, obj):
         request = self.context.get('request')
@@ -137,3 +138,29 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         model = Subscription
         fields = '__all__'
 
+class UserSerializer(serializers.ModelSerializer):
+    avatar = Base64ImageField(required=False, allow_null=True)
+    recipes = RecipeSerializer(many=True, read_only=True)  # Рецепты пользователя
+    is_subscribed = serializers.SerializerMethodField() 
+    
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'avatar', 'recipes', 'is_subscribed')
+
+        # fields = ('id', 'email', 'username', 'first_name', 'last_name', 'password', 'avatar')
+    
+    # def validate(self, attrs):
+    #     if not attrs.get('username'):
+    #         raise serializers.ValidationError({"username": "Это поле обязательно."})
+    #     return attrs
+
+    def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        return Subscription.objects.filter(author=obj, subscriber=user).exists() if user.is_authenticated else False
+    
+    def update(self, instance, validated_data):
+        # Обновляем только переданные поля
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance

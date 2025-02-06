@@ -12,7 +12,7 @@ from recipes.filters import IngredientFilter
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 
-from .models import User, Recipe, Tag, Ingredient, FavoriteRecipe, ShoppingList, RecipeIngredient
+from .models import User, Recipe, Tag, Ingredient, FavoriteRecipe, ShoppingList, RecipeIngredient, Subscription
 from .serializers import (
     UserSerializer, RecipeSerializer, TagSerializer,
     IngredientSerializer, FavoriteRecipeSerializer,
@@ -76,7 +76,38 @@ class UserViewSet(viewsets.ModelViewSet):
         user.save()
         return Response({"status": "Пароль успешно изменён"}, status=200)
     
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def subscribe(self, request, pk=None):
+        """Подписка на пользователя"""
+        author = get_object_or_404(User, pk=pk)
+        if request.user == author:
+            return Response({"error": "Нельзя подписаться на самого себя."}, status=status.HTTP_400_BAD_REQUEST)
 
+        subscription, created = Subscription.objects.get_or_create(author=author, subscriber=request.user)
+        if created:
+            return Response({"status": f"Вы подписались на {author.username}"}, status=status.HTTP_201_CREATED)
+        return Response({"status": f"Вы уже подписаны на {author.username}"}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def unsubscribe(self, request, pk=None):
+        """Отписка от пользователя"""
+        author = get_object_or_404(User, pk=pk)
+        subscription = Subscription.objects.filter(author=author, subscriber=request.user)
+        if subscription.exists():
+            subscription.delete()
+            return Response({"status": f"Вы отписались от {author.username}"}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"error": f"Вы не подписаны на {author.username}"}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+    @action(detail=True, methods=['get'], permission_classes=[permissions.AllowAny])
+    def recipes(self, request, pk=None):
+        """Все рецепты пользователя"""
+        user = get_object_or_404(User, pk=pk)
+        recipes = Recipe.objects.filter(author=user)
+        serializer = RecipeSerializer(recipes, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()

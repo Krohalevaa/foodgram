@@ -16,7 +16,7 @@ from .models import User, Recipe, Tag, Ingredient, FavoriteRecipe, ShoppingList,
 from .serializers import (
     UserSerializer, RecipeSerializer, TagSerializer,
     IngredientSerializer, FavoriteRecipeSerializer,
-    ShoppingListSerializer
+    ShoppingListSerializer, SubscriptionSerializer
 )
 from .pagination import CustomPagination
 from rest_framework.pagination import LimitOffsetPagination
@@ -107,6 +107,32 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = RecipeSerializer(recipes, many=True, context={'request': request})
         return Response(serializer.data)
     
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def subscriptions(self, request):
+        """
+        Возвращает список подписок для текущего пользователя.
+        Поддерживает параметр recipes_limit для ограничения количества рецептов.
+        """
+        # Предполагаем, что модель Subscription имеет поля: author и subscriber
+        subscriptions = Subscription.objects.filter(subscriber=request.user)
+        serializer = SubscriptionSerializer(subscriptions, many=True, context={'request': request})
+    
+        # Если передан параметр recipes_limit, его можно использовать внутри сериализатора,
+        # чтобы ограничить количество рецептов, возвращаемых для каждого автора.
+        recipes_limit = request.query_params.get('recipes_limit')
+        # Например, можно добавить его в контекст сериализатора:
+        context = self.get_serializer_context()
+        context.update({'recipes_limit': recipes_limit})
+
+        # Пагинация подписок
+        page = self.paginate_queryset(subscriptions)
+        if page is not None:
+            serializer = SubscriptionSerializer(page, many=True, context=context)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = SubscriptionSerializer(subscriptions, many=True, context=context)
+        return Response(serializer.data)
+    
     
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -116,7 +142,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = CustomPagination
     # permission_classes = [permissions.AllowAny]
+    
 
+    def perform_create(self, serializer):
+        """При создании рецепта автоматически устанавливаем текущего пользователя как автора"""
+        serializer.save(author=self.request.user)
     
 
     def get_serializer_context(self):

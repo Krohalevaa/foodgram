@@ -165,7 +165,7 @@ class RecipeIngredient(models.Model):
         Ingredient,
         on_delete=models.CASCADE,
         verbose_name='Ингредиент',
-        related_name='ingtedient_in_recipe')
+        related_name='ingredient_in_recipe')
     quantity: models.FloatField = models.FloatField(
         verbose_name='Количество ингредиента',
         validators=[MinValueValidator(1,

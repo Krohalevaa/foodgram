@@ -98,6 +98,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         # fields = ('id', 'name', 'image', 'cooking_time', 'is_favorite')
 
         fields = '__all__'
+        extra_kwargs = {
+            "author": {"read_only": True},  # ← Запрещаем передавать author вручную
+        }
 
     
     
@@ -133,12 +136,9 @@ class ShoppingListSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Subscription
-        fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
+
     avatar = Base64ImageField(required=False, allow_null=True)
     recipes = RecipeSerializer(many=True, read_only=True)  # Рецепты пользователя
     is_subscribed = serializers.SerializerMethodField() 
@@ -164,3 +164,35 @@ class UserSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+    
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
+    recipes = serializers.SerializerMethodField()
+    username = serializers.CharField(source='author.username', read_only=True)
+    first_name = serializers.CharField(source='author.first_name', read_only=True)
+    last_name = serializers.CharField(source='author.last_name', read_only=True)
+    avatar = serializers.ImageField(source='author.avatar', read_only=True)  # Поле для аватара пользователя
+    # recipes = RecipeSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Subscription
+        fields = '__all__'
+    
+    def get_recipes(self, obj):
+        """
+        Возвращает список рецептов автора подписки, ограниченный по параметру recipes_limit,
+        который передается через контекст.
+        """
+        recipes_limit = self.context.get('recipes_limit')
+        # Получаем рецепты автора (предполагается, что у модели User есть related_name='recipes' для рецептов)
+        recipes_qs = obj.author.recipes.all()
+        if recipes_limit:
+            try:
+                recipes_limit = int(recipes_limit)
+                recipes_qs = recipes_qs[:recipes_limit]
+            except ValueError:
+                pass  # Если переданное значение не число, игнорируем ограничение
+        # Сериализуем рецепты (используем ваш RecipeSerializer)
+        serializer = RecipeSerializer(recipes_qs, many=True, context=self.context)
+        return serializer.data

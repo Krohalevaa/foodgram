@@ -162,17 +162,14 @@ class RecipeIngredient(models.Model):
     recipe: models.ForeignKey = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        # related_name='ingredient_for_recipe',
         related_name='recipe_ingredients',
         verbose_name='Рецепт',)
     ingredient: models.ForeignKey = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
         verbose_name='Ингредиент',
-        related_name='ingredient_recipes',
-        # related_name='ingredient_in_recipe'
-        )
-    quantity: models.FloatField = models.FloatField(
+        related_name='ingredient_recipes',)
+    amount: models.FloatField = models.FloatField(
         verbose_name='Количество ингредиента',
         validators=[MinValueValidator(1,
                                       message='Минимальное количество = 1'),])
@@ -182,7 +179,7 @@ class RecipeIngredient(models.Model):
         verbose_name_plural = 'Ингредиенты рецепта'
 
     def __str__(self):
-        return f"{self.quantity} {self.ingredient.unit} of {self.ingredient.name}"
+        return f"{self.amount} {self.ingredient.unit} of {self.ingredient.name}"
 
 
 class RecipeTag(models.Model):
@@ -209,13 +206,11 @@ class FavoriteRecipe(models.Model):
     user: models.ForeignKey = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        # related_name='favorited_by',
         related_name='favorite_recipes',
         verbose_name='Пользователь')
     recipe: models.ForeignKey = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        # related_name='favorite_recipes',
         related_name='favorited_by_users',
         verbose_name='Рецепт')
 
@@ -234,35 +229,17 @@ class ShoppingList(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='shopping_list',
-        # related_name='shoppinglist_user',
         verbose_name='Пользователь')
     recipe: models.ForeignKey = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='in_shopping_lists',
-        # related_name='shoppinglist_recipe',
         verbose_name='Рецепт')
 
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
         unique_together = ('user', 'recipe')
-
-    # def get_shopping_list(self):
-    #     """Получить список ингредиентов для рецептов в списке покупок."""
-    #     ingredients = {}
-    #     for recipe in self.user.shopping_lists.all():
-    #         for recipe_ingredient in recipe.recipe.ingredients.all():
-    #             if recipe_ingredient.ingredient not in ingredients:
-    #                 ingredients[recipe_ingredient.ingredient] = {
-    #                     'quantity': recipe_ingredient.quantity,
-    #                     'unit': recipe_ingredient.unit
-    #                 }
-    #             else:
-    #                 ingredients[
-    #                     recipe_ingredient.ingredient][
-    #                         'quantity'] += recipe_ingredient.quantity
-    #     return ingredients
 
     def __str__(self):
         return f"Список покупок для {self.user.username}: {self.recipe.name}"
@@ -272,14 +249,12 @@ class Subscription(models.Model):
     """Модель для подписки, связывает пользователей."""
     author: models.ForeignKey = models.ForeignKey(
         User,
-        # related_name='subscrib',
         related_name='subscribers',
         on_delete=models.CASCADE,
         verbose_name='Автор рецепта')
     subscriber: models.ForeignKey = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        # related_name='subscriber',
         related_name='subscriptions',
         verbose_name='Подписчик')
 

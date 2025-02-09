@@ -135,6 +135,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """При создании рецепта автоматически устанавливаем текущего пользователя как автора"""
         serializer.save(author=self.request.user)
 
+
     def get_serializer_context(self):
         """Передаем request в контекст сериализатора"""
         context = super().get_serializer_context()
@@ -235,7 +236,7 @@ class ShoppingCartDownloadViewSet(viewsets.ViewSet):
         for item in shopping_list:
             for recipe_ingredient in item.recipe.ingredient_for_recipe.all():
                 ingredient = recipe_ingredient.ingredient
-                ingredients[f"{ingredient.name} ({ingredient.unit})"] += recipe_ingredient.quantity
+                ingredients[f"{ingredient.name} ({ingredient.unit})"] += recipe_ingredient.amount
 
         content = "\n".join(f"{name} — {amount}" for name, amount in ingredients.items())
         response = HttpResponse(content, content_type='text/plain')

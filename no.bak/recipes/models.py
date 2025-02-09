@@ -64,8 +64,8 @@ class RecipeIngredient(models.Model):
                                                   on_delete=models.CASCADE)
     ingredient: models.ForeignKey = models.ForeignKey(Ingredient,
                                                       on_delete=models.CASCADE)
-    quantity: models.FloatField = models.FloatField()  # Количество ингредиента
+    amount: models.FloatField = models.FloatField()  # Количество ингредиента
 
     def __str__(self):
         """Возвращает строковое представление связи рецепта и ингредиента."""
-        return f"{self.quantity} {self.ingredient.unit} of {self.ingredient.name}"
+        return f"{self.amount} {self.ingredient.unit} of {self.ingredient.name}"

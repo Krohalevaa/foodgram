@@ -95,43 +95,25 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     image = Base64ImageField(required=True)
     is_favorited = serializers.SerializerMethodField()
-
-    # tags = TagSerializer(many=True)
-    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, write_only=True)
-    # displayed_tags = TagSerializer(
-    #     many=True,
-    #     source='tags',
-    #     read_only=True  # Только для чтения
-    # )
     
-    
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True,
+        write_only=True,
+        required=False
+    )
     ingredients = RecipeIngredientInputSerializer(
         many=True,
         source='recipe_ingredients',
-        read_only=True
-        # write_only=True
-    )
-    # output_ingredients = RecipeIngredientOutputSerializer(
-    #     many=True,
-    #     source='recipe_ingredients',
-    #     read_only=True
-    # ) это нах
-    # output_ingredients = RecipeIngredientSerializer(
-    #     many=True,
-    #     source='recipe_ingredients',
-    #     read_only=True
-    # )
-    tags_info = TagSerializer(
-        many=True,
-        source='tags',
-        read_only=True
+        write_only=True,
+        required=False
     )
 
     class Meta:
         model = Recipe
         fields = [
             'id', 'name', 'text', 'cooking_time', 'author',
-            'tags', 'tags_info', 'ingredients', 'image', 
+            'tags', 'ingredients', 'image',
             'slug', 'creation_date', 'is_favorited'
         ]
         # fields = '__all__'
@@ -140,16 +122,20 @@ class RecipeSerializer(serializers.ModelSerializer):
         }
 
     def to_representation(self, instance):
-        data = super().to_representation(instance)
-    # Преобразуем ингредиенты для фронтенда
-        data['ingredients'] = [
+        rep = super().to_representation(instance)
+        # Для тегов – выводим полную информацию через TagSerializer
+        rep['tags'] = TagSerializer(instance.tags.all(), many=True).data
+        # Для ингредиентов – перебираем объекты промежуточной модели
+        rep['ingredients'] = [
             {
-                'name': i.ingredient.name,
-                'unit': i.ingredient.unit,
-                'amount': i.amount
-            } for i in instance.recipe_ingredients.all()
+                'id': ri.ingredient.id,
+                'name': ri.ingredient.name,
+                'unit': ri.ingredient.unit,
+                'amount': ri.amount
+            }
+            for ri in instance.recipe_ingredients.all()
         ]
-        return data
+        return rep
 
     def get_author(self, obj):
         author = obj.author

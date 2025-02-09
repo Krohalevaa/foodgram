@@ -35,11 +35,13 @@ class User(AbstractUser):
         verbose_name='Аватар пользователя')
     groups = models.ManyToManyField(
         Group,
-        related_name='custom_user_set',
+        # related_name='custom_user_set',
+        related_name='custom_users',
         blank=True)
     user_permissions = models.ManyToManyField(
         Permission,
-        related_name='custom_user_permissions_set',
+        # related_name='custom_user_permissions_set',
+        related_name='custom_users_permissions',
         blank=True)
     
     USERNAME_FIELD = 'email'
@@ -120,6 +122,7 @@ class Recipe(models.Model):
         verbose_name='Автор рецепта',)
     tags: models.ManyToManyField = models.ManyToManyField(
         Tag,
+        through='RecipeTag',
         related_name='recipes',
         verbose_name='Тэги рецепта',)
     ingredients: models.ManyToManyField = models.ManyToManyField(
@@ -159,13 +162,16 @@ class RecipeIngredient(models.Model):
     recipe: models.ForeignKey = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='ingredient_for_recipe',
+        # related_name='ingredient_for_recipe',
+        related_name='recipe_ingredients',
         verbose_name='Рецепт',)
     ingredient: models.ForeignKey = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
         verbose_name='Ингредиент',
-        related_name='ingredient_in_recipe')
+        related_name='ingredient_recipes',
+        # related_name='ingredient_in_recipe'
+        )
     quantity: models.FloatField = models.FloatField(
         verbose_name='Количество ингредиента',
         validators=[MinValueValidator(1,
@@ -184,12 +190,14 @@ class RecipeTag(models.Model):
     recipe: models.ForeignKey = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
+        related_name='recipe_tags',
         verbose_name='Рецепт')
 
     tag: models.ForeignKey = models.ForeignKey(
         Tag,
         on_delete=models.CASCADE,
-        verbose_name='Теги')
+        related_name='tag_recipes',
+        verbose_name='Тег')
 
     class Meta:
         verbose_name = 'Тег рецепта'
@@ -201,12 +209,14 @@ class FavoriteRecipe(models.Model):
     user: models.ForeignKey = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='favorited_by',
+        # related_name='favorited_by',
+        related_name='favorite_recipes',
         verbose_name='Пользователь')
     recipe: models.ForeignKey = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='favorite_recipes',
+        # related_name='favorite_recipes',
+        related_name='favorited_by_users',
         verbose_name='Рецепт')
 
     class Meta:
@@ -223,12 +233,14 @@ class ShoppingList(models.Model):
     user: models.ForeignKey = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='shoppinglist_user',
+        related_name='shopping_list',
+        # related_name='shoppinglist_user',
         verbose_name='Пользователь')
     recipe: models.ForeignKey = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='shoppinglist_recipe',
+        related_name='in_shopping_lists',
+        # related_name='shoppinglist_recipe',
         verbose_name='Рецепт')
 
     class Meta:
@@ -260,13 +272,15 @@ class Subscription(models.Model):
     """Модель для подписки, связывает пользователей."""
     author: models.ForeignKey = models.ForeignKey(
         User,
-        related_name='subscrib',
+        # related_name='subscrib',
+        related_name='subscribers',
         on_delete=models.CASCADE,
         verbose_name='Автор рецепта')
     subscriber: models.ForeignKey = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscriber',
+        # related_name='subscriber',
+        related_name='subscriptions',
         verbose_name='Подписчик')
 
     class Meta:

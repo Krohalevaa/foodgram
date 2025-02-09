@@ -65,7 +65,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user = request.user
         serializer = self.get_serializer(user)
         return Response(serializer.data)
-    
+
     @action(detail=False, methods=['post'])
     def set_password(self, request):
         user = request.user
@@ -75,7 +75,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user.set_password(new_password)
         user.save()
         return Response({"status": "Пароль успешно изменён"}, status=200)
-    
+
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def subscribe(self, request, pk=None):
         """Подписка на пользователя"""
@@ -97,7 +97,6 @@ class UserViewSet(viewsets.ModelViewSet):
             subscription.delete()
             return Response({"status": f"Вы отписались от {author.username}"}, status=status.HTTP_204_NO_CONTENT)
         return Response({"error": f"Вы не подписаны на {author.username}"}, status=status.HTTP_400_BAD_REQUEST)
-    
 
     @action(detail=True, methods=['get'], permission_classes=[permissions.AllowAny])
     def recipes(self, request, pk=None):
@@ -106,64 +105,51 @@ class UserViewSet(viewsets.ModelViewSet):
         recipes = Recipe.objects.filter(author=user)
         serializer = RecipeSerializer(recipes, many=True, context={'request': request})
         return Response(serializer.data)
-    
+
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         """
         Возвращает список подписок для текущего пользователя.
         Поддерживает параметр recipes_limit для ограничения количества рецептов.
         """
-        # Предполагаем, что модель Subscription имеет поля: author и subscriber
         subscriptions = Subscription.objects.filter(subscriber=request.user)
         serializer = SubscriptionSerializer(subscriptions, many=True, context={'request': request})
-    
-        # Если передан параметр recipes_limit, его можно использовать внутри сериализатора,
-        # чтобы ограничить количество рецептов, возвращаемых для каждого автора.
         recipes_limit = request.query_params.get('recipes_limit')
-        # Например, можно добавить его в контекст сериализатора:
         context = self.get_serializer_context()
         context.update({'recipes_limit': recipes_limit})
-
-        # Пагинация подписок
         page = self.paginate_queryset(subscriptions)
         if page is not None:
             serializer = SubscriptionSerializer(page, many=True, context=context)
             return self.get_paginated_response(serializer.data)
-
         serializer = SubscriptionSerializer(subscriptions, many=True, context=context)
         return Response(serializer.data)
-    
-    
+
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    # queryset = Recipe.objects.prefetch_related('ingredient_for_recipe__ingredient')
     serializer_class = RecipeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = CustomPagination
-    # permission_classes = [permissions.AllowAny]
-    
 
     def perform_create(self, serializer):
         """При создании рецепта автоматически устанавливаем текущего пользователя как автора"""
         serializer.save(author=self.request.user)
-    
 
     def get_serializer_context(self):
         """Передаем request в контекст сериализатора"""
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
-    
+
     def get_queryset(self):
         """Фильтруем рецепты по избранному, если передан параметр favorite=true"""
         queryset = Recipe.objects.all()
         request = self.request
         is_favorited = request.query_params.get("is_favorited")
         if request.user.is_authenticated and is_favorited == "1":
-            queryset = queryset.filter(favorite_recipes__user=request.user)
+            queryset = queryset.filter(favorited_by_users__user=request.user)
         return queryset
-    
+
     @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         """Добавление/удаление рецепта из списка покупок."""
@@ -174,10 +160,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         elif request.method == 'DELETE':
             ShoppingList.objects.filter(user=request.user, recipe=recipe).delete()
             return Response({'status': 'Рецепт удален из списка покупок'}, status=status.HTTP_204_NO_CONTENT)
-
-
-    
-
 
 
     @action(detail=True, methods=['get'], url_path='get-link')
@@ -193,34 +175,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, pk=pk)
         
         if request.method == 'POST':
-            # Добавление рецепта в избранное
             FavoriteRecipe.objects.get_or_create(user=request.user, recipe=recipe)
             return Response({'status': 'Рецепт добавлен в избранное'})
         
         elif request.method == 'DELETE':
-            # Удаление рецепта из избранного
             favorite = FavoriteRecipe.objects.filter(user=request.user, recipe=recipe)
             if favorite.exists():
                 favorite.delete()
                 return Response({'status': 'Рецепт удалён из избранного'}, status=status.HTTP_204_NO_CONTENT)
             return Response({'error': 'Рецепт не найден в избранном'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
-    # def favorite(self, request, pk=None):
-    #     """Добавление рецепта в избранное"""
-    #     recipe = get_object_or_404(Recipe, pk=pk)
-    #     FavoriteRecipe.objects.get_or_create(user=request.user, recipe=recipe)
-    #     return Response({'status': 'Рецепт добавлен в избранное'})
-    
-    # @action(detail=True, methods=['delete'], permission_classes=[permissions.IsAuthenticated])
-    # def unfavorite(self, request, pk=None):
-    #     """Удаление рецепта из избранного"""
-    #     recipe = get_object_or_404(Recipe, pk=pk)
-    #     favorite = FavoriteRecipe.objects.filter(user=request.user, recipe=recipe)
-    #     if favorite.exists():
-    #         favorite.delete()
-    #         return Response({'status': 'Рецепт удалён из избранного'}, status=status.HTTP_204_NO_CONTENT)
-    #     return Response({'error': 'Рецепт не найден в избранном'}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def shopping_cart(self, request, pk=None):

@@ -97,29 +97,59 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_favorited = serializers.SerializerMethodField()
 
     # tags = TagSerializer(many=True)
-    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
+    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, write_only=True)
+    # displayed_tags = TagSerializer(
+    #     many=True,
+    #     source='tags',
+    #     read_only=True  # Только для чтения
+    # )
+    
+    
     ingredients = RecipeIngredientInputSerializer(
         many=True,
         source='recipe_ingredients',
-        write_only=True
+        read_only=True
+        # write_only=True
     )
     # output_ingredients = RecipeIngredientOutputSerializer(
     #     many=True,
     #     source='recipe_ingredients',
     #     read_only=True
+    # ) это нах
+    # output_ingredients = RecipeIngredientSerializer(
+    #     many=True,
+    #     source='recipe_ingredients',
+    #     read_only=True
     # )
-    output_ingredients = RecipeIngredientSerializer(
+    tags_info = TagSerializer(
         many=True,
-        source='recipe_ingredients',
+        source='tags',
         read_only=True
     )
 
     class Meta:
         model = Recipe
-        fields = '__all__'
+        fields = [
+            'id', 'name', 'text', 'cooking_time', 'author',
+            'tags', 'tags_info', 'ingredients', 'image', 
+            'slug', 'creation_date', 'is_favorited'
+        ]
+        # fields = '__all__'
         extra_kwargs = {
             "author": {"read_only": True},
         }
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+    # Преобразуем ингредиенты для фронтенда
+        data['ingredients'] = [
+            {
+                'name': i.ingredient.name,
+                'unit': i.ingredient.unit,
+                'amount': i.amount
+            } for i in instance.recipe_ingredients.all()
+        ]
+        return data
 
     def get_author(self, obj):
         author = obj.author

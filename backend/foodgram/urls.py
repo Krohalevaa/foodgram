@@ -11,9 +11,9 @@ router.register(r'recipes', RecipeViewSet)
 router.register(r'tags', TagViewSet)
 router.register(r'ingredients', IngredientViewSet)
 router.register(r'favorites', FavoriteViewSet)
-# router.register(r'shoplist', ShopListViewSet)
 router.register(r'users', UserViewSet)
-router.register(r'shopping_cart', ShopListViewSet)
+router.register(r'shopping_cart', ShopListViewSet, basename='shopping_cart')
+router.register(r'shopping_cart/download', ShoppingCartDownloadViewSet, basename='shopping_cart_download')
 
 
 urlpatterns = [
@@ -23,9 +23,6 @@ urlpatterns = [
     path('api/users/me/', UserViewSet.as_view({'get': 'retrieve'}), name='user-me'),
     path('api/users/me/avatar/', UserAvatarUpdateView.as_view(), name='user-avatar-update'),
     path('api/auth/', include('djoser.urls.authtoken')),
-    # router.register(r'shopping_cart', ShoppingListViewSet, basename='shopping_cart')
-    # router.register(r'shopping_cart/download', ShoppingCartDownloadViewSet, basename='shopping_cart_download')
-
 ]
 
 

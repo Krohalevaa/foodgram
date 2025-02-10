@@ -1,13 +1,11 @@
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
-from django.urls import reverse
 from django.core.validators import MinValueValidator
 from slugify import slugify
 
 
-
 class User(AbstractUser):
-    """Модель для пользователя, расширяющая стандартную модель AbstractUser."""
+    """Модель пользователя."""
     email = models.EmailField(
         unique=True,
         max_length=50,
@@ -22,12 +20,6 @@ class User(AbstractUser):
     last_name = models.CharField(
         max_length=50,
         verbose_name='Фамилия пользователя')
-    # bio = models.TextField(max_length=150,
-    #                        verbose_name='Описание пользователя')
-
-    # bio: models.TextField = models.TextField(
-    #     max_length=150,
-    #     verbose_name='Описание пользователя')
     avatar = models.ImageField(
         upload_to='avatars/',
         blank=True,
@@ -35,15 +27,13 @@ class User(AbstractUser):
         verbose_name='Аватар пользователя')
     groups = models.ManyToManyField(
         Group,
-        # related_name='custom_user_set',
         related_name='custom_users',
         blank=True)
     user_permissions = models.ManyToManyField(
         Permission,
-        # related_name='custom_user_permissions_set',
         related_name='custom_users_permissions',
         blank=True)
-    
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
@@ -57,13 +47,13 @@ class User(AbstractUser):
 
 
 class Ingredient(models.Model):
-    """Модель для ингредиента."""
+    """Модель ингредиента."""
     name: models.CharField = models.CharField(
         max_length=100,
         verbose_name='Название ингредиента')
     unit: models.CharField = models.CharField(
         max_length=50,
-        verbose_name='Единица измерения')  # Ед: граммы, литры, шт.
+        verbose_name='Единица измерения')
 
     class Meta:
         verbose_name = 'Ингредиент'
@@ -75,7 +65,7 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
-    """Модель для тега записи."""
+    """Модель тега рецепта."""
     name: models.CharField = models.CharField(
         max_length=35,
         unique=True,
@@ -87,7 +77,7 @@ class Tag(models.Model):
     color: models.CharField = models.CharField(
         max_length=7,
         verbose_name="Цвет в HEX",
-        default="#FFFFFF") 
+        default="#FFFFFF")
 
     class Meta:
         verbose_name = 'Тег'
@@ -224,7 +214,7 @@ class FavoriteRecipe(models.Model):
 
 
 class ShoppingList(models.Model):
-    """Модель для списка покупок, где пользователь может добавлять рецепты."""
+    """Модель для списка покупок."""
     user: models.ForeignKey = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

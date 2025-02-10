@@ -1,27 +1,23 @@
-from rest_framework import viewsets, permissions, filters, status
-from rest_framework import generics, permissions, status
+from rest_framework import viewsets, permissions, status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.shortcuts import get_object_or_404
-from rest_framework.permissions import (
-    AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
-)
-from django.shortcuts import render
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import LimitOffsetPagination
+
+from django.shortcuts import get_object_or_404, render
 from django_filters.rest_framework import DjangoFilterBackend
 from recipes.filters import IngredientFilter
 from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
+# from django_filters import rest_framework as filters
 
-from .models import User, Recipe, Tag, Ingredient, FavoriteRecipe, ShoppingList, RecipeIngredient, Subscription
+
+from .models import User, Recipe, Tag, Ingredient, FavoriteRecipe, ShoppingList, Subscription
 from .serializers import (
     UserSerializer, RecipeSerializer, TagSerializer,
     IngredientSerializer, FavoriteRecipeSerializer,
     ShoppingListSerializer, SubscriptionSerializer
 )
 from .pagination import CustomPagination
-from rest_framework.pagination import LimitOffsetPagination
-
-from django.http import HttpResponse
 from collections import defaultdict
 
 
@@ -130,6 +126,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = CustomPagination
+    # filter_backends = [filters.DjangoFilterBackend]
+    # filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         """При создании рецепта автоматически устанавливаем текущего пользователя как автора"""

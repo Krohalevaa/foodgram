@@ -1,5 +1,6 @@
 import django_filters
 from recipes.models import Ingredient, Recipe, Tag
+from django_filters import rest_framework as filters
 
 class IngredientFilter(django_filters.FilterSet):
     # Устанавливаем поиск по подстроке, игнорируя регистр
@@ -10,29 +11,17 @@ class IngredientFilter(django_filters.FilterSet):
         fields = ['name']
 
 
-# class RecipeFilter(django_filters.FilterSet):
-#     """ Фильтр для отображения избранного и списка покупок"""
-#     tags = django_filters.filters.ModelMultipleChoiceFilter(
-#         queryset=Tag.objects.all(),
-#         field_name='tags__slug',
-#         to_field_name='slug')
-#     is_favorited = django_filters.filters.NumberFilter(
-#         method='is_recipe_in_favorites_filter')
-#     is_in_shopping_cart = django_filters.filters.NumberFilter(
-#         method='is_recipe_in_shoppingcart_filter')
+class RecipeFilter(django_filters.FilterSet):
+    author = filters.CharFilter(
+        field_name='author__id',
+        lookup_expr='icontains'
+    )
+    tags = django_filters.ModelMultipleChoiceFilter(
+        field_name='tags__slug', 
+        queryset=Tag.objects.all(),
+        to_field_name='slug'
+    )
 
-#     def is_recipe_in_favorites_filter(self, queryset, name, value):
-#         if value == 1:
-#             user = self.request.user
-#             return queryset.filter(favorites__user_id=user.id)
-#         return queryset
-
-#     def is_recipe_in_shoppingcart_filter(self, queryset, name, value):
-#         if value == 1:
-#             user = self.request.user
-#             return queryset.filter(shopping_recipe__user_id=user.id)
-#         return queryset
-
-#     class Meta:
-#         model = Recipe
-#         fields = ('tags', 'author', 'is_favorited', 'is_in_shopping_cart')
+    class Meta:
+        model = Recipe
+        fields = ('author', 'tags')

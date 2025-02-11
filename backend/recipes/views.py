@@ -6,9 +6,8 @@ from rest_framework.pagination import LimitOffsetPagination
 
 from django.shortcuts import get_object_or_404, render
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.filters import IngredientFilter
+from recipes.filters import IngredientFilter, RecipeFilter
 from django.http import HttpResponse
-# from django_filters import rest_framework as filters
 
 
 from .models import User, Recipe, Tag, Ingredient, FavoriteRecipe, ShoppingList, Subscription
@@ -126,8 +125,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = CustomPagination
-    # filter_backends = [filters.DjangoFilterBackend]
-    # filterset_class = RecipeFilter
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         """При создании рецепта автоматически устанавливаем текущего пользователя как автора"""
@@ -183,14 +182,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 favorite.delete()
                 return Response({'status': 'Рецепт удалён из избранного'}, status=status.HTTP_204_NO_CONTENT)
             return Response({'error': 'Рецепт не найден в избранном'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
-    def shopping_cart(self, request, pk=None):
-        """Добавление рецепта в список покупок"""
-        recipe = get_object_or_404(Recipe, pk=pk)
-        ShoppingList.objects.get_or_create(user=request.user, recipe=recipe)
-        return Response({'status': 'Рецепт добавлен в список покупок'})
 
     def create_recipe(request):
         ingredients = Ingredient.objects.all()

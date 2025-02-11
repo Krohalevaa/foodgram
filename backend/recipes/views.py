@@ -55,6 +55,14 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.AllowAny]
     pagination_class = LimitOffsetPagination
 
+    def create(self, validated_data):
+        """Создание пользователя с хешированным паролем"""
+        password = validated_data.pop('password')  # Извлекаем пароль
+        user = User(**validated_data)  # Создаем пользователя
+        user.set_password(password)  # Устанавливаем хешированный пароль
+        user.save()  # Сохраняем пользователя
+        return user
+
     @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
     def me(self, request):
         """Получение информации о текущем пользователе."""

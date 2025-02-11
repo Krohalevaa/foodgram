@@ -25,7 +25,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'recipes.apps.RecipesConfig',]
+    'recipes.apps.RecipesConfig']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -37,7 +37,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',]
+    'django.middleware.common.CommonMiddleware']
 
 ROOT_URLCONF = 'foodgram.urls'
 

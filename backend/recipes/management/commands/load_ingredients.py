@@ -26,12 +26,14 @@ class Command(BaseCommand):
                 count = 0
                 for row in reader:
                     if not row or len(row) < 2:
-                        self.stdout.write("Пропущена пустая или некорректная строка.")
+                        self.stdout.write(
+                            "Пропущена пустая или некорректная строка.")
                         continue
                     name = row[0].strip()
                     unit = row[1].strip()
                     if not name:
-                        self.stdout.write("Строка пропущена, т.к. имя не указано.")
+                        self.stdout.write(
+                            "Строка пропущена, т.к. имя не указано.")
                         continue
                     ingredient, created = Ingredient.objects.get_or_create(
                         name=name,
@@ -39,6 +41,7 @@ class Command(BaseCommand):
                     )
                     if created:
                         count += 1
-                self.stdout.write(self.style.SUCCESS(f"Загружено {count} ингредиентов."))
+                self.stdout.write(self.style.SUCCESS(
+                    f"Загружено {count} ингредиентов."))
         except FileNotFoundError:
             self.stderr.write(self.style.ERROR(f"Файл не найден: {csv_path}"))

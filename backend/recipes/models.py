@@ -162,14 +162,15 @@ class RecipeIngredient(models.Model):
     amount: models.FloatField = models.FloatField(
         verbose_name='Количество ингредиента',
         validators=[MinValueValidator(1,
-                                      message='Минимальное количество = 1'),])
+                                      message='Минимальное количество = 1')])
 
     class Meta:
         verbose_name = 'Ингредиент рецепта'
         verbose_name_plural = 'Ингредиенты рецепта'
 
     def __str__(self):
-        return f"{self.amount} {self.ingredient.unit} of {self.ingredient.name}"
+        return (
+            f"{self.amount} {self.ingredient.unit} of {self.ingredient.name}")
 
 
 class RecipeTag(models.Model):

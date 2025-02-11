@@ -85,7 +85,9 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 class RecipeIngredientInputSerializer(serializers.ModelSerializer):
     """Сериализатор для ввода ингредиентов в рецепте"""
-    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all(), source='ingredient')
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all(),
+        source='ingredient')
     amount = serializers.FloatField()
 
     class Meta:
@@ -160,7 +162,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         """Проверяет, добавлен ли рецепт в избранное текущим пользователем."""
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            return FavoriteRecipe.objects.filter(user=request.user, recipe=obj).exists()
+            return FavoriteRecipe.objects.filter(
+                user=request.user,
+                recipe=obj).exists()
         return False
 
     def create(self, validated_data):
@@ -195,10 +199,15 @@ class RecipeSerializer(serializers.ModelSerializer):
         return instance
 
     def get_is_in_shopping_cart(self, obj):
-        """Метод для определения, находится ли рецепт в списке покупок текущего пользователя"""
+        """
+        Метод для определения, находится ли рецепт
+        в списке покупок текущего пользователя
+        """
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            return ShoppingList.objects.filter(user=request.user, recipe=obj).exists()
+            return ShoppingList.objects.filter(
+                user=request.user,
+                recipe=obj).exists()
         return False
 
 
@@ -224,20 +233,26 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'avatar', 'recipes', 'is_subscribed')
+        fields = ('id', 'email', 'username', 'first_name',
+                  'last_name', 'avatar', 'recipes', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
-        """Проверяет, подписан ли текущий аутентифицированный пользователь на переданный объект."""
+        """
+        Проверяет, подписан ли текущий аутентифицированный
+        пользователь на переданный объект.
+        """
         request = self.context.get('request', None)
         if request is None or not hasattr(request, 'user'):
             return False
         user = request.user
         if user.is_authenticated:
-            return Subscription.objects.filter(author=obj, subscriber=user).exists()
+            return Subscription.objects.filter(
+                author=obj,
+                subscriber=user).exists()
         return False
 
     def update(self, instance, validated_data):
-        """Обновляет данные экземпляра модели на основе предоставленных данных."""
+        """Обновляет данные экземпляра модели на основе данных."""
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
@@ -248,17 +263,24 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     """Сериализатор для подписок пользователей"""
     author = UserSerializer(read_only=True)
     recipes = serializers.SerializerMethodField()
-    username = serializers.CharField(source='author.username', read_only=True)
-    first_name = serializers.CharField(source='author.first_name', read_only=True)
-    last_name = serializers.CharField(source='author.last_name', read_only=True)
-    avatar = serializers.ImageField(source='author.avatar', read_only=True)
+    username = serializers.CharField(source='author.username',
+                                     read_only=True)
+    first_name = serializers.CharField(source='author.first_name',
+                                       read_only=True)
+    last_name = serializers.CharField(source='author.last_name',
+                                      read_only=True)
+    avatar = serializers.ImageField(source='author.avatar',
+                                    read_only=True)
 
     class Meta:
         model = Subscription
         fields = '__all__'
 
     def get_recipes(self, obj):
-        """Возвращает список рецептов автора подписки, который передается через контекст."""
+        """
+        Возвращает список рецептов автора подписки, который
+        передается через контекст.
+        """
         recipes_limit = self.context.get('recipes_limit')
         recipes_qs = obj.author.recipes.all()
         if recipes_limit:
@@ -267,5 +289,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                 recipes_qs = recipes_qs[:recipes_limit]
             except ValueError:
                 pass
-        serializer = RecipeSerializer(recipes_qs, many=True, context=self.context)
+        serializer = RecipeSerializer(recipes_qs,
+                                      many=True,
+                                      context=self.context)
         return serializer.data

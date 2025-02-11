@@ -13,7 +13,7 @@ from django.http import HttpResponse
 from .models import User, Recipe, Tag, Ingredient, FavoriteRecipe, ShoppingList, Subscription
 from .serializers import (UserSerializer, RecipeSerializer, TagSerializer,
                           IngredientSerializer, FavoriteRecipeSerializer,
-                          ShoppingListSerializer, SubscriptionSerializer)
+                          ShoppingListSerializer, SubscriptionSerializer, UserCreateSerializer)
 from .pagination import CustomPagination
 from recipes.filters import IngredientFilter, RecipeFilter
 
@@ -55,13 +55,13 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.AllowAny]
     pagination_class = LimitOffsetPagination
 
-    def create(self, validated_data):
+    def create(self, request, *args, **kwargs):
         """Создание пользователя с хешированным паролем"""
-        password = validated_data.pop('password')  # Извлекаем пароль
-        user = User(**validated_data)  # Создаем пользователя
-        user.set_password(password)  # Устанавливаем хешированный пароль
-        user.save()  # Сохраняем пользователя
-        return user
+        serializer = UserCreateSerializer(data=request.data)  # Используем UserCreateSerializer для создания пользователя
+        if serializer.is_valid():
+            user = serializer.save()  # Сохраняем пользователя через сериализатор
+            return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
     def me(self, request):
@@ -103,28 +103,6 @@ class UserViewSet(viewsets.ModelViewSet):
                 subscription.delete()
                 return Response({"status": f"Вы отписались от {author.username}"}, status=status.HTTP_204_NO_CONTENT)
             return Response({"error": f"Вы не подписаны на {author.username}"}, status=status.HTTP_400_BAD_REQUEST)
-
-    # @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
-    # def subscribe(self, request, pk=None):
-    #     """Подписка на пользователя"""
-    #     author = get_object_or_404(User, pk=pk)
-    #     if request.user == author:
-    #         return Response({"error": "Нельзя подписаться на самого себя."}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     subscription, created = Subscription.objects.get_or_create(author=author, subscriber=request.user)
-    #     if created:
-    #         return Response({"status": f"Вы подписались на {author.username}"}, status=status.HTTP_201_CREATED)
-    #     return Response({"status": f"Вы уже подписаны на {author.username}"}, status=status.HTTP_400_BAD_REQUEST)
-
-    # @action(detail=True, methods=['delete'], permission_classes=[permissions.IsAuthenticated])
-    # def unsubscribe(self, request, pk=None):
-    #     """Отписка от пользователя"""
-    #     author = get_object_or_404(User, pk=pk)
-    #     subscription = Subscription.objects.filter(author=author, subscriber=request.user)
-    #     if subscription.exists():
-    #         subscription.delete()
-    #         return Response({"status": f"Вы отписались от {author.username}"}, status=status.HTTP_204_NO_CONTENT)
-    #     return Response({"error": f"Вы не подписаны на {author.username}"}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['get'], permission_classes=[permissions.AllowAny])
     def recipes(self, request, pk=None):

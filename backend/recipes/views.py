@@ -137,7 +137,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """При создании рецепта автоматически устанавливаем текущего пользователя как автора"""
         serializer.save(author=self.request.user)
 
-
     def get_serializer_context(self):
         """Передаем request в контекст сериализатора"""
         context = super().get_serializer_context()
@@ -157,7 +156,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if request.user.is_authenticated and is_in_shopping_cart == "1":
             queryset = queryset.filter(shopping_lists__user=request.user)
         return queryset
-    
 
     @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
@@ -180,7 +178,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_link(self, request, pk=None):
         recipe = self.get_object()
         return Response({"short_link": f"/api/recipes/{recipe.slug}/"})
-    
+
     @action(detail=True, methods=['post', 'delete'], permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, pk=None):
         """Добавление или удаление рецепта в/из избранного.
@@ -210,25 +208,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ingredients = recipe.ingredients.all()
         ingredients_serializer = IngredientSerializer(ingredients, many=True)
         return Response(ingredients_serializer.data)
-    
+
     @action(detail=False, methods=['get'], url_path='download_shopping_cart')
     def download_shopping_cart(self, request, *args, **kwargs):
         shopping_list = ShoppingList.objects.filter(user=request.user)
         ingredients = defaultdict(float)
-
-        # Суммируем ингредиенты
         for item in shopping_list:
             for recipe_ingredient in item.recipe.recipe_ingredients.all():
                 ingredient = recipe_ingredient.ingredient
                 ingredients[f"{ingredient.name} ({ingredient.unit})"] += recipe_ingredient.amount
-
-        # Создаем строку для скачивания
         content = "\n".join(f"{name} — {amount}" for name, amount in ingredients.items())
-
-        # Формируем ответ для скачивания
         response = HttpResponse(content, content_type='text/plain')
         response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
         return response
+
 
 class FavoriteViewSet(viewsets.ModelViewSet):
     queryset = FavoriteRecipe.objects.all()
@@ -245,7 +238,3 @@ class ShopListViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return ShoppingList.objects.filter(user=self.request.user)
-
-class ShoppingCartDownloadViewSet(viewsets.ViewSet):
-    """Скачивание списка покупок."""
-    permission_classes = [IsAuthenticated]

@@ -104,7 +104,6 @@ REST_FRAMEWORK = {
         # 'rest_framework.permissions.IsAuthenticated',
         'rest_framework.permissions.AllowAny',
     ],
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'DEFAULT_PAGINATION_CLASS': None,
     'PAGE_SIZE': None,
 
@@ -114,10 +113,9 @@ REST_FRAMEWORK = {
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
-    # 'USER_CREATE_PASSWORD_RETYPE': True,
     'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
-    'USER_CREATE_PASSWORD_RETYPE': False,  # Отключить повторный ввод пароля
-    'SEND_ACTIVATION_EMAIL': False,  # Отключить активацию по email
+    'USER_CREATE_PASSWORD_RETYPE': False,
+    'SEND_ACTIVATION_EMAIL': False,
     'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',
     'SERIALIZERS': {
         'user_create': 'recipes.serializers.UserCreateSerializer',
@@ -135,8 +133,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',  # Стандартный бэкэнд
-    'recipes.backends.EmailAuthBackend',  # Кастомный бэкэнд для email
+    'django.contrib.auth.backends.ModelBackend',
+    'recipes.backends.EmailAuthBackend',
 )
 
 AUTH_USER_MODEL = 'recipes.User'

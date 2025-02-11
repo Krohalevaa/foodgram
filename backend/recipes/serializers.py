@@ -3,7 +3,8 @@ from rest_framework import serializers
 from django.core.files.base import ContentFile
 from django.contrib.auth import authenticate, get_user_model
 from djoser.serializers import UserCreateSerializer
-from .models import Recipe, Ingredient, Tag, RecipeIngredient, FavoriteRecipe, ShoppingList, Subscription, RecipeTag
+from .models import (Recipe, Ingredient, Tag, RecipeIngredient,
+                     FavoriteRecipe, ShoppingList, Subscription)
 
 User = get_user_model()
 
@@ -112,8 +113,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = [
             'id', 'name', 'text', 'cooking_time', 'author',
-            'tags', 'ingredients', 'image',
-            'slug', 'creation_date', 'is_favorited', 'is_in_shopping_cart'
+            'tags', 'ingredients', 'image', 'slug', 'creation_date',
+            'is_favorited', 'is_in_shopping_cart'
         ]
         extra_kwargs = {"author": {"read_only": True}}
 
@@ -180,14 +181,14 @@ class RecipeSerializer(serializers.ModelSerializer):
             ) for item in ingredients_data]
         RecipeIngredient.objects.bulk_create(ingredients)
         return instance
-    
+
     def get_is_in_shopping_cart(self, obj):
         """Метод для определения, находится ли рецепт в списке покупок текущего пользователя"""
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            # Проверяем, есть ли данный рецепт в списке покупок пользователя
             return ShoppingList.objects.filter(user=request.user, recipe=obj).exists()
         return False
+
 
 class FavoriteRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для избранных рецептов"""
@@ -234,7 +235,6 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source='author.first_name', read_only=True)
     last_name = serializers.CharField(source='author.last_name', read_only=True)
     avatar = serializers.ImageField(source='author.avatar', read_only=True)
-    # recipes = RecipeSerializer(many=True, read_only=True)
 
     class Meta:
         model = Subscription

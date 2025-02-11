@@ -1,7 +1,5 @@
 from pathlib import Path
 import os
-import environ
-# import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -67,11 +65,6 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
-env = environ.Env(
-    # задайте значения по умолчанию
-    DEBUG=(bool, False)
-)
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 DATABASES = {
     'default': {

@@ -35,6 +35,7 @@
 volumes:
   pg_data:
   static:
+  media:
 networks:
   django-network-fg:
     driver: bridge
@@ -59,6 +60,7 @@ services:
       - db
     volumes:
       - static:/backend_static
+      - media:/app/media
       # - static:/app/collected_static 
   frontend:
     image: krohalevaa/foodgram_front
@@ -80,3 +82,4 @@ services:
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static:/app/collected_static/
+      - media:/app/media

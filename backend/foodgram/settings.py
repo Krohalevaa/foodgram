@@ -1,5 +1,7 @@
 from pathlib import Path
 import os
+import environ
+# import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -65,6 +67,12 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+env = environ.Env(
+    # задайте значения по умолчанию
+    DEBUG=(bool, False)
+)
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
 DATABASES = {
     'default': {
         # Меняем настройку Django: теперь для работы будет использоваться
@@ -146,8 +154,13 @@ DJOSER = {
 CORS_URLS_REGEX = r'^/api/.*$'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'http://127.0.0.1:8000',
+    "http://localhost:8000",
+    "https://foodgram-net.hopto.org",
 ]
+CSV_FILES_DIR = os.path.join(BASE_DIR, 'data')
+
+CSRF_TRUSTED_ORIGINS = ['https://foodgram-net.hopto.org']
+
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
@@ -155,9 +168,6 @@ AUTHENTICATION_BACKENDS = (
 )
 
 AUTH_USER_MODEL = 'recipes.User'
-
-CORS_ALLOW_ALL_ORIGINS = True
-
 
 # DJOSER = {
 #     # 'LOGIN_FIELD': 'email',

@@ -1,10 +1,11 @@
 import django_filters
-from recipes.models import Ingredient, Recipe, Tag
 from django_filters import rest_framework as filters
+
+from recipes.models import Ingredient, Recipe, Tag
 
 
 class IngredientFilter(django_filters.FilterSet):
-    # Устанавливаем поиск по подстроке, игнорируя регистр
+    """Фильтр для модели Ingredient."""
     name = django_filters.CharFilter(field_name='name', lookup_expr='icontains')
 
     class Meta:
@@ -13,6 +14,7 @@ class IngredientFilter(django_filters.FilterSet):
 
 
 class RecipeFilter(django_filters.FilterSet):
+    """Фильтр для модели Recipe."""
     author = filters.CharFilter(
         field_name='author__id',
         lookup_expr='icontains'

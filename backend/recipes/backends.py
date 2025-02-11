@@ -1,26 +1,14 @@
-# from django.contrib.auth import get_user_model
-# from django.contrib.auth.backends import BaseBackend
-
-# User = get_user_model()
-
-# class EmailAuthBackend(BaseBackend):
-#     def authenticate(self, request, email=None, password=None):
-#         try:
-#             user = User.objects.get(email=email)
-#             if user.check_password(password):
-#                 return user
-#         except User.DoesNotExist:
-#             return None
+import logging
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import BaseBackend
-import logging
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
 class EmailAuthBackend(BaseBackend):
+    """Кастомная аутентификация с использованием электронной почты."""
     def authenticate(self, request, email=None, password=None):
         try:
             user = User.objects.get(email=email)

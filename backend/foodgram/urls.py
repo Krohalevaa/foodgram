@@ -1,11 +1,12 @@
-from django.contrib import admin
 from django.urls import path, include
+
+from django.contrib import admin
+from django.conf import settings
 from rest_framework.routers import DefaultRouter
 
 from recipes.views import (RecipeViewSet, TagViewSet, IngredientViewSet,
                            UserViewSet, FavoriteViewSet, ShopListViewSet,
                            UserAvatarUpdateView)
-from django.conf import settings
 
 
 router = DefaultRouter()

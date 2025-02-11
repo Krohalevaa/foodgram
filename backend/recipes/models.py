@@ -192,7 +192,7 @@ class RecipeTag(models.Model):
 
 
 class FavoriteRecipe(models.Model):
-    """Модель для избранных рецептов от пользователя."""
+    """Модель для избранных рецептов пользователя."""
     user: models.ForeignKey = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -214,7 +214,7 @@ class FavoriteRecipe(models.Model):
 
 
 class ShoppingList(models.Model):
-    """Модель для списка покупок."""
+    """Модель для списка покупок пользователя."""
     user: models.ForeignKey = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -236,7 +236,7 @@ class ShoppingList(models.Model):
 
 
 class Subscription(models.Model):
-    """Модель для подписки, связывает пользователей."""
+    """Модель для подписки, пользователей."""
     author: models.ForeignKey = models.ForeignKey(
         User,
         related_name='subscribers',

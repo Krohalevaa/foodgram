@@ -2,7 +2,7 @@ import csv
 import os
 from django.core.management.base import BaseCommand
 from django.conf import settings
-from recipes.models import Ingredient  # Убедитесь, что модель Ingredient существует
+from recipes.models import Ingredient
 
 
 class Command(BaseCommand):
@@ -12,7 +12,6 @@ class Command(BaseCommand):
         parser.add_argument(
             '--path',
             type=str,
-            # help="Путь к файлу ingredients.csv",
             help="/data/ingredients.csv/",
             default=os.path.join(settings.BASE_DIR, 'data', 'ingredients.csv')
         )

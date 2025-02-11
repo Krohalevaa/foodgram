@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from rest_framework import viewsets, permissions, status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -6,21 +8,18 @@ from rest_framework.pagination import LimitOffsetPagination
 
 from django.shortcuts import get_object_or_404, render
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.filters import IngredientFilter, RecipeFilter
 from django.http import HttpResponse
 
-
 from .models import User, Recipe, Tag, Ingredient, FavoriteRecipe, ShoppingList, Subscription
-from .serializers import (
-    UserSerializer, RecipeSerializer, TagSerializer,
-    IngredientSerializer, FavoriteRecipeSerializer,
-    ShoppingListSerializer, SubscriptionSerializer
-)
+from .serializers import (UserSerializer, RecipeSerializer, TagSerializer,
+                          IngredientSerializer, FavoriteRecipeSerializer,
+                          ShoppingListSerializer, SubscriptionSerializer)
 from .pagination import CustomPagination
-from collections import defaultdict
+from recipes.filters import IngredientFilter, RecipeFilter
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
+    """Вьюсет для работы с ингредиентами."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [permissions.AllowAny]
@@ -29,40 +28,43 @@ class IngredientViewSet(viewsets.ModelViewSet):
 
 
 class TagViewSet(viewsets.ModelViewSet):
+    """Вьюсет для работы с тегами рецептов."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [permissions.AllowAny]
 
 
 class UserAvatarUpdateView(generics.UpdateAPIView):
-    """Эндпоинт для обновления аватара пользователя."""
+    """Для обновления аватара пользователя."""
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
+        """Возвращает текущего пользователя для обновления аватара."""
         return self.request.user
 
     def put(self, request, *args, **kwargs):
+        """Частичное обновление пользователя, включая аватар."""
         return self.partial_update(request, *args, **kwargs)
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """Вьюсет для работы с пользователями."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
     pagination_class = LimitOffsetPagination
 
-    @action(detail=False,
-            methods=['get'],
-            permission_classes=[permissions.AllowAny])
-            # permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
     def me(self, request):
+        """Получение информации о текущем пользователе."""
         user = request.user
         serializer = self.get_serializer(user)
         return Response(serializer.data)
 
     @action(detail=False, methods=['post'])
     def set_password(self, request):
+        """Изменение пароля текущего пользователя."""
         user = request.user
         new_password = request.data.get("new_password")
         if not new_password:
@@ -103,10 +105,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
-        """
-        Возвращает список подписок для текущего пользователя.
-        Поддерживает параметр recipes_limit для ограничения количества рецептов.
-        """
+        """Возвращает список подписок для текущего пользователя."""
         subscriptions = Subscription.objects.filter(subscriber=request.user)
         serializer = SubscriptionSerializer(subscriptions, many=True, context={'request': request})
         recipes_limit = request.query_params.get('recipes_limit')
@@ -121,6 +120,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """Вьюсет для работы с рецептами."""
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -129,11 +129,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
-        """При создании рецепта автоматически устанавливаем текущего пользователя как автора"""
+        """
+        При создании рецепта автоматически устанавливаем
+        текущего пользователя как автора
+        """
         serializer.save(author=self.request.user)
 
     def get_serializer_context(self):
-        """Передаем request в контекст сериализатора"""
+        """Передача request в контекст сериализатора"""
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
@@ -169,14 +172,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_link(self, request, pk=None):
+        """Получение короткой ссылки на рецепт."""
         recipe = self.get_object()
         return Response({"short_link": f"/api/recipes/{recipe.slug}/"})
 
     @action(detail=True, methods=['post', 'delete'], permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, pk=None):
-        """Добавление или удаление рецепта в/из избранного.
-        POST - добавление,
-        DELETE - удаление."""
+        """Добавление или удаление рецепта в/из избранного."""
         recipe = get_object_or_404(Recipe, pk=pk)
         if request.method == 'POST':
             FavoriteRecipe.objects.get_or_create(user=request.user, recipe=recipe)
@@ -189,6 +191,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Рецепт не найден в избранном'}, status=status.HTTP_400_BAD_REQUEST)
 
     def create_recipe(request):
+        """Создание нового рецепта, доступ к ингредиентам."""
         ingredients = Ingredient.objects.all()
         return render(request, 'recipes/create_recipe.html', {'ingredients': ingredients})
 
@@ -202,6 +205,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='download_shopping_cart')
     def download_shopping_cart(self, request, *args, **kwargs):
+        """Скачивание списка покупок для текущего пользователя."""
         shopping_list = ShoppingList.objects.filter(user=request.user)
         ingredients = defaultdict(float)
         for item in shopping_list:
@@ -215,17 +219,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):
+    """Вьюсет для работы с избранными рецептами пользователя."""
     queryset = FavoriteRecipe.objects.all()
     serializer_class = FavoriteRecipeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        """Возвращает избранные рецепты для текущего пользователя."""
         return self.queryset.filter(user=self.request.user)
 
 
 class ShopListViewSet(viewsets.ModelViewSet):
+    """Представление для работы с списками покупок."""
     serializer_class = ShoppingListSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        """Возвращает список покупок для текущего пользователя."""
         return ShoppingList.objects.filter(user=self.request.user)

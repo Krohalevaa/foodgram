@@ -223,7 +223,7 @@ class ShoppingList(models.Model):
     recipe: models.ForeignKey = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='in_shopping_lists',
+        related_name='shopping_lists',
         verbose_name='Рецепт')
 
     class Meta:

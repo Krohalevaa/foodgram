@@ -143,21 +143,44 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Фильтруем рецепты по избранному, если передан параметр favorite=true"""
         queryset = Recipe.objects.all()
         request = self.request
+        
         is_favorited = request.query_params.get("is_favorited")
         if request.user.is_authenticated and is_favorited == "1":
             queryset = queryset.filter(favorited_by_users__user=request.user)
+        
+        is_in_shopping_cart = request.query_params.get("is_in_shopping_cart")
+        if request.user.is_authenticated and is_in_shopping_cart == "1":
+            queryset = queryset.filter(shopping_lists__user=request.user)
         return queryset
+    
 
     @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         """Добавление/удаление рецепта из списка покупок."""
         recipe = get_object_or_404(Recipe, pk=pk)
+
         if request.method == 'POST':
-            ShoppingList.objects.get_or_create(user=request.user, recipe=recipe)
-            return Response({'status': 'Рецепт добавлен в список покупок'}, status=status.HTTP_201_CREATED)
+            obj, created = ShoppingList.objects.get_or_create(user=request.user, recipe=recipe)
+            if created:
+                return Response({'status': 'Рецепт добавлен в список покупок'}, status=status.HTTP_201_CREATED)
+            return Response({'error': 'Рецепт уже в списке покупок'}, status=status.HTTP_400_BAD_REQUEST)
+
         elif request.method == 'DELETE':
-            ShoppingList.objects.filter(user=request.user, recipe=recipe).delete()
-            return Response({'status': 'Рецепт удален из списка покупок'}, status=status.HTTP_204_NO_CONTENT)
+            deleted_count, _ = ShoppingList.objects.filter(user=request.user, recipe=recipe).delete()
+            if deleted_count:
+                return Response({'status': 'Рецепт удалён из списка покупок'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'error': 'Рецепт не найден в списке покупок'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
+    # def shopping_cart(self, request, pk=None):
+    #     """Добавление/удаление рецепта из списка покупок."""
+    #     recipe = get_object_or_404(Recipe, pk=pk)
+    #     if request.method == 'POST':
+    #         ShoppingList.objects.get_or_create(user=request.user, recipe=recipe)
+    #         return Response({'status': 'Рецепт добавлен в список покупок'}, status=status.HTTP_201_CREATED)
+    #     elif request.method == 'DELETE':
+    #         ShoppingList.objects.filter(user=request.user, recipe=recipe).delete()
+    #         return Response({'status': 'Рецепт удален из списка покупок'}, status=status.HTTP_204_NO_CONTENT)
 
 
     @action(detail=True, methods=['get'], url_path='get-link')
@@ -206,12 +229,13 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 
 
 class ShopListViewSet(viewsets.ModelViewSet):
-    queryset = ShoppingList.objects.all()
+    # queryset = ShoppingList.objects.all()
     serializer_class = ShoppingListSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        return ShoppingList.objects.filter(user=self.request.user)
+        # return self.queryset.filter(user=self.request.user)
 
 
 class ShoppingCartDownloadViewSet(viewsets.ViewSet):

@@ -95,6 +95,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     image = Base64ImageField(required=True)
     is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
@@ -112,7 +113,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'text', 'cooking_time', 'author',
             'tags', 'ingredients', 'image',
-            'slug', 'creation_date', 'is_favorited'
+            'slug', 'creation_date', 'is_favorited', 'is_in_shopping_cart'
         ]
         extra_kwargs = {"author": {"read_only": True}}
 
@@ -179,7 +180,14 @@ class RecipeSerializer(serializers.ModelSerializer):
             ) for item in ingredients_data]
         RecipeIngredient.objects.bulk_create(ingredients)
         return instance
-
+    
+    def get_is_in_shopping_cart(self, obj):
+        """Метод для определения, находится ли рецепт в списке покупок текущего пользователя"""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            # Проверяем, есть ли данный рецепт в списке покупок пользователя
+            return ShoppingList.objects.filter(user=request.user, recipe=obj).exists()
+        return False
 
 class FavoriteRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для избранных рецептов"""

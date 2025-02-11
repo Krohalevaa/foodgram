@@ -85,7 +85,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({"status": f"Вы подписались на {author.username}"}, status=status.HTTP_201_CREATED)
         return Response({"status": f"Вы уже подписаны на {author.username}"}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['delete'], permission_classes=[permissions.IsAuthenticated])
     def unsubscribe(self, request, pk=None):
         """Отписка от пользователя"""
         author = get_object_or_404(User, pk=pk)

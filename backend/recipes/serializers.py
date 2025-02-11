@@ -37,6 +37,8 @@ class Base64ImageField(serializers.ImageField):
 
 class UserCreateSerializer(UserCreateSerializer):
     """Сериализатор для создания пользователя"""
+    password = serializers.CharField(write_only=True)
+
     class Meta(UserCreateSerializer.Meta):
         model = User
         fields = ('id', 'email', 'username', 'password')

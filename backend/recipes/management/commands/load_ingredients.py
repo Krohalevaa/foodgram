@@ -1,50 +1,9 @@
-# import csv
-# import os
-
-# from django.core.management.base import BaseCommand
-# from django.conf import settings
-# from recipes.models import Ingredient  # Импортируйте вашу модель Ingredient
-
-
-# class Command(BaseCommand):
-#     help = "Загружает ингредиенты из CSV файла"
-
-#     def add_arguments(self, parser):
-#         parser.add_argument(
-#             '--path',
-#             type=str,
-#             # help="Путь к файлу ingredients.csv",
-#             help="/data/ingredients.csv/",
-#             default=os.path.join(settings.BASE_DIR, 'data', 'ingredients.csv'))
-
-#     def handle(self, *args, **options):
-#         csv_path = options['path']
-#         self.stdout.write(f"Чтение файла: {csv_path}")
-
-#         try:
-#             with open(csv_path, newline='', encoding='utf-8') as csvfile:
-#                 reader = csv.DictReader(csvfile)
-#                 count = 0
-#                 for row in reader:
-#                     # Предположим, что в CSV есть поля: name, measurement_unit
-#                     name = row.get('name')
-#                     measurement_unit = row.get('measurement_unit')
-#                     if not name:
-#                         continue
-#                     ingredient, created = Ingredient.objects.get_or_create(
-#                         name=name,
-#                         defaults={'measurement_unit': measurement_unit}
-#                     )
-#                     if created:
-#                         count += 1
-#                 self.stdout.write(self.style.SUCCESS(f"Загружено {count} ингредиентов."))
-#         except FileNotFoundError:
-#             self.stderr.write(self.style.ERROR(f"Файл не найден: {csv_path}"))
 import csv
 import os
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from recipes.models import Ingredient  # Убедитесь, что модель Ingredient существует
+
 
 class Command(BaseCommand):
     help = "Загружает ингредиенты из CSV файла (без заголовков)"

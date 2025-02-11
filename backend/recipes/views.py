@@ -19,11 +19,6 @@ from .serializers import (
 from .pagination import CustomPagination
 from collections import defaultdict
 
-from collections import defaultdict
-from django.http import HttpResponse
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-
 
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
@@ -147,11 +142,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Фильтруем рецепты по избранному и списку покупок"""
         queryset = Recipe.objects.all()
         request = self.request
-        
         is_favorited = request.query_params.get("is_favorited")
         if request.user.is_authenticated and is_favorited == "1":
             queryset = queryset.filter(favorited_by_users__user=request.user)
-        
         is_in_shopping_cart = request.query_params.get("is_in_shopping_cart")
         if request.user.is_authenticated and is_in_shopping_cart == "1":
             queryset = queryset.filter(shopping_lists__user=request.user)
@@ -185,11 +178,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         POST - добавление,
         DELETE - удаление."""
         recipe = get_object_or_404(Recipe, pk=pk)
-        
         if request.method == 'POST':
             FavoriteRecipe.objects.get_or_create(user=request.user, recipe=recipe)
             return Response({'status': 'Рецепт добавлен в избранное'})
-        
         elif request.method == 'DELETE':
             favorite = FavoriteRecipe.objects.filter(user=request.user, recipe=recipe)
             if favorite.exists():

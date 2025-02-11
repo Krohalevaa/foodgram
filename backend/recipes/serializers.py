@@ -208,7 +208,7 @@ class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для пользователя"""
     avatar = Base64ImageField(required=False, allow_null=True)
     recipes = RecipeSerializer(many=True, read_only=True)
-    is_subscribed = serializers.SerializerMethodField() 
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         model = User

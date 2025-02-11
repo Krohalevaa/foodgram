@@ -228,10 +228,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         """Проверяет, подписан ли текущий аутентифицированный пользователь на переданный объект."""
-        user = self.context.get('request').user
-        if user is None:
-            return False
-        return Subscription.objects.filter(author=obj, subscriber=user).exists() if user.is_authenticated else False
+        # Проверяем, есть ли request в контексте
+        request = self.context.get('request', None)
+        if request is None or not hasattr(request, 'user'):
+            return False  # Если нет запроса или пользователя, возвращаем False
+        user = request.user
+        if user.is_authenticated:
+            return Subscription.objects.filter(author=obj, subscriber=user).exists()
+        return False
 
     def update(self, instance, validated_data):
         """Обновляет данные экземпляра модели на основе предоставленных данных."""

@@ -33,8 +33,7 @@ cd foodgram
 ```
 
 ### Настройка окружения
-Создайте файлы окружения:
-# backend/.env
+Создайте файлы окружения (backend/.env):
 - SECRET_KEY=your-django-secret-key
 - DEBUG=False
 - DB_ENGINE=django.db.backends.postgresql
@@ -46,10 +45,10 @@ cd foodgram
 
 ### Запуск проекта
 ```bash
-docker-compose up -d --build
-docker-compose exec backend python manage.py migrate
-docker-compose exec backend python manage.py collectstatic --no-input
-docker-compose exec backend python manage.py createsuperuser
+docker compose up -d --build
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py collectstatic --no-input
+docker compose exec backend python manage.py createsuperuser
 ```
 
 ### Замены для настройки:
@@ -62,8 +61,8 @@ docker-compose exec backend python manage.py createsuperuser
    - `SSH_KEY`
 
 ### Проект доступен по адресу:
-https://foodgram-net.hopto.org
-Админка: https://foodgram-net.hopto.org/admin/
+- https://foodgram-net.hopto.org
+- Админ: https://foodgram-net.hopto.org/admin/
 
 ### Авторы
 

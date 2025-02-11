@@ -1,3 +1,6 @@
+## CI/CD Badge 
+[![Main Foodgram workflow](https://github.com/Krohalevaa/foodgram/actions/workflows/main.yml/badge.svg)](https://github.com/Krohalevaa/foodgram/actions/workflows/main.yml)
+
 # Foodgram - Продуктовый помощник
 
 «Foodgram» — онлайн-сервис для публикации рецептов. Пользователи могут создавать рецепты, добавлять их в избранное, подписываться на авторов и формировать список покупок.

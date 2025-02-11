@@ -229,6 +229,8 @@ class UserSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         """Проверяет, подписан ли текущий аутентифицированный пользователь на переданный объект."""
         user = self.context.get('request').user
+        if user is None:
+            return False
         return Subscription.objects.filter(author=obj, subscriber=user).exists() if user.is_authenticated else False
 
     def update(self, instance, validated_data):

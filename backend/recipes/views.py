@@ -9,6 +9,8 @@ from rest_framework.pagination import LimitOffsetPagination
 from django.shortcuts import get_object_or_404, render
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import HttpResponse
+from django.urls import reverse
+from django.contrib.auth import authenticate, get_user_model
 
 from .models import User, Recipe, Tag, Ingredient, FavoriteRecipe, ShoppingList, Subscription
 from .serializers import (UserSerializer, RecipeSerializer, TagSerializer,
@@ -60,8 +62,18 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = UserCreateSerializer(data=request.data)  # Используем UserCreateSerializer для создания пользователя
         if serializer.is_valid():
             user = serializer.save()  # Сохраняем пользователя через сериализатор
-            return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+            # Перенаправляем пользователя на страницу входа после регистрации
+            login_url = reverse('login')  # Или укажите свой URL для страницы входа
+            return Response({'message': 'Пользователь успешно создан. Перенаправление на страницу входа.'}, status=status.HTTP_201_CREATED, headers={'Location': login_url})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def create(self, request, *args, **kwargs):
+    #     """Создание пользователя с хешированным паролем"""
+    #     serializer = UserCreateSerializer(data=request.data)  # Используем UserCreateSerializer для создания пользователя
+    #     if serializer.is_valid():
+    #         user = serializer.save()  # Сохраняем пользователя через сериализатор
+    #         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
     def me(self, request):

@@ -58,9 +58,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Создание пользователя с хешированным паролем"""
-        serializer = UserCreateSerializer(data=request.data)  # Используем UserCreateSerializer для создания пользователя
+        serializer = UserCreateSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()  # Сохраняем пользователя через сериализатор
+            user = serializer.save()
             login_url = reverse('login')
             return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED, headers={'Location': login_url})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -45,10 +45,10 @@ class UserCreateSerializer(UserCreateSerializer):
 
     def create(self, validated_data):
         """Создание пользователя с хешированным паролем"""
-        password = validated_data.pop('password')  # Извлекаем пароль
-        user = User(**validated_data)  # Создаем пользователя
-        user.set_password(password)  # Устанавливаем хешированный пароль
-        user.save()  # Сохраняем пользователя
+        password = validated_data.pop('password')
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
         return user
 
 
@@ -228,10 +228,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         """Проверяет, подписан ли текущий аутентифицированный пользователь на переданный объект."""
-        # Проверяем, есть ли request в контексте
         request = self.context.get('request', None)
         if request is None or not hasattr(request, 'user'):
-            return False  # Если нет запроса или пользователя, возвращаем False
+            return False
         user = request.user
         if user.is_authenticated:
             return Subscription.objects.filter(author=obj, subscriber=user).exists()

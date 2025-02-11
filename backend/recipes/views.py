@@ -19,6 +19,11 @@ from .serializers import (
 from .pagination import CustomPagination
 from collections import defaultdict
 
+from collections import defaultdict
+from django.http import HttpResponse
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+
 
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
@@ -140,7 +145,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return context
 
     def get_queryset(self):
-        """Фильтруем рецепты по избранному, если передан параметр favorite=true"""
+        """Фильтруем рецепты по избранному и списку покупок"""
         queryset = Recipe.objects.all()
         request = self.request
         
@@ -170,18 +175,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if deleted_count:
                 return Response({'status': 'Рецепт удалён из списка покупок'}, status=status.HTTP_204_NO_CONTENT)
             return Response({'error': 'Рецепт не найден в списке покупок'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # @action(detail=True, methods=['post', 'delete'], permission_classes=[IsAuthenticated])
-    # def shopping_cart(self, request, pk=None):
-    #     """Добавление/удаление рецепта из списка покупок."""
-    #     recipe = get_object_or_404(Recipe, pk=pk)
-    #     if request.method == 'POST':
-    #         ShoppingList.objects.get_or_create(user=request.user, recipe=recipe)
-    #         return Response({'status': 'Рецепт добавлен в список покупок'}, status=status.HTTP_201_CREATED)
-    #     elif request.method == 'DELETE':
-    #         ShoppingList.objects.filter(user=request.user, recipe=recipe).delete()
-    #         return Response({'status': 'Рецепт удален из списка покупок'}, status=status.HTTP_204_NO_CONTENT)
-
 
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_link(self, request, pk=None):
@@ -217,7 +210,25 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ingredients = recipe.ingredients.all()
         ingredients_serializer = IngredientSerializer(ingredients, many=True)
         return Response(ingredients_serializer.data)
+    
+    @action(detail=False, methods=['get'], url_path='download_shopping_cart')
+    def download_shopping_cart(self, request, *args, **kwargs):
+        shopping_list = ShoppingList.objects.filter(user=request.user)
+        ingredients = defaultdict(float)
 
+        # Суммируем ингредиенты
+        for item in shopping_list:
+            for recipe_ingredient in item.recipe.recipe_ingredients.all():
+                ingredient = recipe_ingredient.ingredient
+                ingredients[f"{ingredient.name} ({ingredient.unit})"] += recipe_ingredient.amount
+
+        # Создаем строку для скачивания
+        content = "\n".join(f"{name} — {amount}" for name, amount in ingredients.items())
+
+        # Формируем ответ для скачивания
+        response = HttpResponse(content, content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+        return response
 
 class FavoriteViewSet(viewsets.ModelViewSet):
     queryset = FavoriteRecipe.objects.all()
@@ -229,29 +240,12 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 
 
 class ShopListViewSet(viewsets.ModelViewSet):
-    # queryset = ShoppingList.objects.all()
     serializer_class = ShoppingListSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return ShoppingList.objects.filter(user=self.request.user)
-        # return self.queryset.filter(user=self.request.user)
-
 
 class ShoppingCartDownloadViewSet(viewsets.ViewSet):
     """Скачивание списка покупок."""
     permission_classes = [IsAuthenticated]
-
-    def list(self, request):
-        shopping_list = ShoppingList.objects.filter(user=request.user)
-        ingredients = defaultdict(float)
-
-        for item in shopping_list:
-            for recipe_ingredient in item.recipe.ingredient_for_recipe.all():
-                ingredient = recipe_ingredient.ingredient
-                ingredients[f"{ingredient.name} ({ingredient.unit})"] += recipe_ingredient.amount
-
-        content = "\n".join(f"{name} — {amount}" for name, amount in ingredients.items())
-        response = HttpResponse(content, content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
-        return response

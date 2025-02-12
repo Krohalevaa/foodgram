@@ -21,7 +21,7 @@ from .serializers import (UserSerializer, RecipeSerializer, TagSerializer,
                           ShoppingListSerializer, SubscriptionSerializer,
                           CustomUserCreateSerializer)
 from .pagination import CustomPagination
-from backend.api.filters import IngredientFilter, RecipeFilter
+from .filters import IngredientFilter, RecipeFilter
 
 
 class IngredientViewSet(viewsets.ModelViewSet):

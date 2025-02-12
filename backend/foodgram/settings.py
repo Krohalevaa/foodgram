@@ -129,10 +129,10 @@ DJOSER = {
     'SEND_ACTIVATION_EMAIL': False,
     'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',
     'SERIALIZERS': {
-        'user_create': 'recipes.serializers.CustomUserCreateSerializer',
-        'user': 'recipes.serializers.UserSerializer',
-        'current_user': 'recipes.serializers.UserSerializer',
-        'user_login': 'recipes.serializers.UserLoginSerializer',
+        'user_create': 'api.serializers.CustomUserCreateSerializer',
+        'user': 'api.serializers.UserSerializer',
+        'current_user': 'api.serializers.UserSerializer',
+        'user_login': 'api.serializers.UserLoginSerializer',
     },
 }
 

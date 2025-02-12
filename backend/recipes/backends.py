@@ -9,6 +9,7 @@ User = get_user_model()
 
 class EmailAuthBackend(BaseBackend):
     """Кастомная аутентификация с использованием электронной почты."""
+
     def authenticate(self, request, email=None, password=None):
         try:
             user = User.objects.get(email=email)

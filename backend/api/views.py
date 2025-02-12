@@ -1,3 +1,5 @@
+"""Модуль вью для работы с рецептаци и пользователями."""
+
 from collections import defaultdict
 
 from rest_framework import viewsets, permissions, status, generics
@@ -11,18 +13,20 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.http import HttpResponse
 from django.urls import reverse
 
-from .models import (User, Recipe, Tag, Ingredient,
-                     FavoriteRecipe, ShoppingList, Subscription)
+from recipes.models import (Recipe, Tag, Ingredient,
+                            FavoriteRecipe, ShoppingList, Subscription)
+from users.models import User
 from .serializers import (UserSerializer, RecipeSerializer, TagSerializer,
                           IngredientSerializer, FavoriteRecipeSerializer,
                           ShoppingListSerializer, SubscriptionSerializer,
-                          UserCreateSerializer)
+                          CustomUserCreateSerializer)
 from .pagination import CustomPagination
-from recipes.filters import IngredientFilter, RecipeFilter
+from backend.api.filters import IngredientFilter, RecipeFilter
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с ингредиентами."""
+
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [permissions.AllowAny]
@@ -32,6 +36,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
 
 class TagViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с тегами рецептов."""
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [permissions.AllowAny]
@@ -39,6 +44,7 @@ class TagViewSet(viewsets.ModelViewSet):
 
 class UserAvatarUpdateView(generics.UpdateAPIView):
     """Для обновления аватара пользователя."""
+
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -53,14 +59,15 @@ class UserAvatarUpdateView(generics.UpdateAPIView):
 
 class UserViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с пользователями."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
     pagination_class = LimitOffsetPagination
 
     def create(self, request, *args, **kwargs):
-        """Создание пользователя с хешированным паролем"""
-        serializer = UserCreateSerializer(data=request.data)
+        """Создание пользователя с хешированным паролем."""
+        serializer = CustomUserCreateSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             login_url = reverse('login')
@@ -131,7 +138,7 @@ class UserViewSet(viewsets.ModelViewSet):
             methods=['get'],
             permission_classes=[permissions.AllowAny])
     def recipes(self, request, pk=None):
-        """Все рецепты пользователя"""
+        """Все рецепты пользователя."""
         user = get_object_or_404(User, pk=pk)
         recipes = Recipe.objects.filter(author=user)
         serializer = RecipeSerializer(
@@ -169,6 +176,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с рецептами."""
+
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -177,20 +185,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
-        """
-        При создании рецепта автоматически устанавливаем
-        текущего пользователя как автора
-        """
+        """Автоматически устанавливаем текущего пользователя как автора."""
         serializer.save(author=self.request.user)
 
     def get_serializer_context(self):
-        """Передача request в контекст сериализатора"""
+        """Передача request в контекст сериализатора."""
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
 
     def get_queryset(self):
-        """Фильтруем рецепты по избранному и списку покупок"""
+        """Фильтруем рецепты по избранному и списку покупок."""
         queryset = Recipe.objects.all()
         request = self.request
         is_favorited = request.query_params.get("is_favorited")
@@ -269,7 +274,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def get_ingredients(self, request, pk=None):
-        """Возвращает ингредиенты рецепта"""
+        """Возвращает ингредиенты рецепта."""
         recipe = self.get_object()
         ingredients = recipe.ingredients.all()
         ingredients_serializer = IngredientSerializer(ingredients, many=True)
@@ -296,6 +301,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class FavoriteViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с избранными рецептами пользователя."""
+
     queryset = FavoriteRecipe.objects.all()
     serializer_class = FavoriteRecipeSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -307,6 +313,7 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 
 class ShopListViewSet(viewsets.ModelViewSet):
     """Представление для работы с списками покупок."""
+
     serializer_class = ShoppingListSerializer
     permission_classes = [permissions.IsAuthenticated]
 

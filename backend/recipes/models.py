@@ -1,53 +1,21 @@
-from django.contrib.auth.models import AbstractUser, Group, Permission
+"""Модуль моделей для работы с рецептами и подписками."""
+
 from django.db import models
 from django.core.validators import MinValueValidator
 from slugify import slugify
 
-
-class User(AbstractUser):
-    """Модель пользователя."""
-    email = models.EmailField(
-        unique=True,
-        max_length=50,
-        verbose_name='Электронная почта')
-    username = models.CharField(
-        unique=True,
-        max_length=50,
-        verbose_name='Никнейм пользователя')
-    first_name = models.CharField(
-        max_length=50,
-        verbose_name='Имя пользователя')
-    last_name = models.CharField(
-        max_length=50,
-        verbose_name='Фамилия пользователя')
-    avatar = models.ImageField(
-        upload_to='avatars/',
-        blank=True,
-        null=True,
-        verbose_name='Аватар пользователя')
-    groups = models.ManyToManyField(
-        Group,
-        related_name='custom_users',
-        blank=True)
-    user_permissions = models.ManyToManyField(
-        Permission,
-        related_name='custom_users_permissions',
-        blank=True)
-
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
-
-    class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
-        ordering = ('id',)
-
-    def __str__(self):
-        return self.username
+from users.models import User
 
 
 class Ingredient(models.Model):
-    """Модель ингредиента."""
+    """
+    Модель ингредиента.
+
+    Эта модель используется для хранения информации о ингредиентах,
+    которые могут быть использованы в рецептах.
+    Включает название ингредиента и его единицу измерения.
+    """
+
     name: models.CharField = models.CharField(
         max_length=100,
         verbose_name='Название ингредиента')
@@ -56,16 +24,26 @@ class Ingredient(models.Model):
         verbose_name='Единица измерения')
 
     class Meta:
+        """Метаданные для настройки модели ингредиента."""
+
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
         ordering = ('name',)
 
     def __str__(self):
+        """Возвращает строку объекта - название ингредиента."""
         return self.name
 
 
 class Tag(models.Model):
-    """Модель тега рецепта."""
+    """
+    Модель тега рецепта.
+
+    Эта модель используется для хранения тегов, которые могут быть
+    присвоены рецептам.
+    Каждый тег имеет уникальное название и слаг, а также цвет в формате HEX.
+    """
+
     name: models.CharField = models.CharField(
         max_length=35,
         unique=True,
@@ -80,16 +58,26 @@ class Tag(models.Model):
         default="#FFFFFF")
 
     class Meta:
+        """Метаданные для настройки модели тега."""
+
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
         ordering = ('name',)
 
     def __str__(self):
+        """Возвращает строку объекта - название тега."""
         return self.name
 
 
 class Recipe(models.Model):
-    """Модель для страницы рецепта пользователя."""
+    """
+    Модель для страницы рецепта пользователя.
+
+    Эта модель используется для хранения рецептов, включая название,
+    описание, фото, время приготовления, автора, связанные теги и ингредиенты.
+    Каждый рецепт также имеет уникальный слаг и дату создания.
+    """
+
     name: models.CharField = models.CharField(
         max_length=255,
         verbose_name='Заголовок рецепта')
@@ -128,11 +116,19 @@ class Recipe(models.Model):
         verbose_name='Дата создания рецепта')
 
     class Meta:
+        """Метаданные для настройки модели рецепта."""
+
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ('creation_date',)
 
     def save(self, *args, **kwargs):
+        """Переопределяет метод сохранения.
+
+        Для того, чтобы генерировать уникальный слаг для рецепта.
+        Если слаг не задан, он создается автоматически на основе
+        названия рецепта.
+        """
         if not self.slug:
             base_slug = slugify(self.name)
             slug = base_slug
@@ -144,11 +140,18 @@ class Recipe(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
+        """Возвращает строку объекта - название рецепта."""
         return self.name
 
 
 class RecipeIngredient(models.Model):
-    """Модель для связи между рецептом и ингредиентом."""
+    """
+    Модель для связи между рецептом и ингредиентом.
+
+    Эта модель используется для хранения информации о том, какие
+    ингредиенты используются в рецепте, и в каком количестве.
+    """
+
     recipe: models.ForeignKey = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -165,16 +168,28 @@ class RecipeIngredient(models.Model):
                                       message='Минимальное количество = 1')])
 
     class Meta:
+        """Метаданные для настройки модели связи ингредиента и рецепта."""
+
         verbose_name = 'Ингредиент рецепта'
         verbose_name_plural = 'Ингредиенты рецепта'
 
     def __str__(self):
+        """Возвращает строковое представление объекта.
+
+        Возвращает количество и единица измерения ингредиента.
+        """
         return (
             f"{self.amount} {self.ingredient.unit} of {self.ingredient.name}")
 
 
 class RecipeTag(models.Model):
-    """Модель для связи между рецептом и тэгом."""
+    """
+    Модель для связи между рецептом и тэгом.
+
+    Эта модель используется для связи рецепта с тегами, которые
+    могут быть присвоены рецепту.
+    """
+
     recipe: models.ForeignKey = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -188,12 +203,21 @@ class RecipeTag(models.Model):
         verbose_name='Тег')
 
     class Meta:
+        """Метаданные для настройки модели связи тега и рецепта."""
+
         verbose_name = 'Тег рецепта'
         verbose_name_plural = 'Теги рецепта'
 
 
 class FavoriteRecipe(models.Model):
-    """Модель для избранных рецептов пользователя."""
+    """
+    Модель для избранных рецептов пользователя.
+
+    Эта модель используется для хранения избранных рецептов
+    конкретного пользователя.
+    Один пользователь может добавить один рецепт в избранное только один раз.
+    """
+
     user: models.ForeignKey = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -206,16 +230,27 @@ class FavoriteRecipe(models.Model):
         verbose_name='Рецепт')
 
     class Meta:
+        """Метаданные для настройки модели избранного."""
+
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
         unique_together = ('user', 'recipe')
 
     def __str__(self):
+        """Возвращает строку объекта - пользователь и рецепт."""
         return f"{self.user.username} -> {self.recipe.name}"
 
 
 class ShoppingList(models.Model):
-    """Модель для списка покупок пользователя."""
+    """
+    Модель для списка покупок пользователя.
+
+    Эта модель используется для хранения рецептов, которые
+    добавлены пользователем в список покупок.
+    Один пользователь может добавить один рецепт в список покупок
+    только один раз.
+    """
+
     user: models.ForeignKey = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -228,16 +263,26 @@ class ShoppingList(models.Model):
         verbose_name='Рецепт')
 
     class Meta:
+        """Метаданные для настройки модели списка покупок."""
+
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
         unique_together = ('user', 'recipe')
 
     def __str__(self):
+        """Возвращает строку объекта - имя пользователя и название рецепта."""
         return f"Список покупок для {self.user.username}: {self.recipe.name}"
 
 
 class Subscription(models.Model):
-    """Модель для подписки, пользователей."""
+    """
+    Модель для подписки пользователей.
+
+    Эта модель используется для хранения информации о подписках пользователей
+    на других пользователей (авторов рецептов).
+    Один пользователь может подписаться на другого пользователя.
+    """
+
     author: models.ForeignKey = models.ForeignKey(
         User,
         related_name='subscribers',
@@ -250,8 +295,11 @@ class Subscription(models.Model):
         verbose_name='Подписчик')
 
     class Meta:
+        """Метаданные для настройки модели подписок."""
+
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
 
     def __str__(self):
+        """Возвращает строковое представление объекта - автор и подписчик."""
         return f"{self.author} -> {self.subscriber}"

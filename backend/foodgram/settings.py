@@ -1,5 +1,7 @@
-from pathlib import Path
+"""Этот модуль устанавливает настройки для проекта Django."""
+
 import os
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -58,13 +60,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 DATABASES = {
     'default': {
@@ -132,7 +127,7 @@ DJOSER = {
     'SEND_ACTIVATION_EMAIL': False,
     'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',
     'SERIALIZERS': {
-        'user_create': 'recipes.serializers.UserCreateSerializer',
+        'user_create': 'recipes.serializers.CustomUserCreateSerializer',
         'user': 'recipes.serializers.UserSerializer',
         'current_user': 'recipes.serializers.UserSerializer',
         'user_login': 'recipes.serializers.UserLoginSerializer',
@@ -157,45 +152,3 @@ AUTHENTICATION_BACKENDS = (
 )
 
 AUTH_USER_MODEL = 'recipes.User'
-
-# DJOSER = {
-#     # 'LOGIN_FIELD': 'email',
-#     'LOGIN_FIELD': 'username',
-#     'USER_CREATE_PASSWORD_RETYPE': True,
-#     # 'USERNAME_CHANGED_EMAIL_CONFIRMATION': False,
-#     # 'PASSWORD_CHANGED_EMAIL_CONFIRMATION': False,
-#     # 'SEND_CONFIRMATION_EMAIL': False,
-#     # 'SET_PASSWORD_RETYPE': True,
-#     # 'PASSWORD_RESET_CONFIRM_RETYPE': True,
-#     'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',
-#     'SERIALIZERS': {
-#         'user_create': 'recipes.serializers.UserCreateSerializer',
-#         # 'token_create': 'djoser.serializers.TokenCreateSerializer',
-#         'user': 'recipes.serializers.UserSerializer',
-#         'current_user': 'recipes.serializers.UserSerializer',
-#         # 'user_login': 'recipes.serializers.UserLoginSerializer',
-#     },
-# }
-
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'console': {
-#             'level': 'DEBUG',
-#             'class': 'logging.StreamHandler',
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['console'],
-#             'level': 'DEBUG',
-#             'propagate': True,
-#         },
-#         'foodgram': {
-#             'handlers': ['console'],
-#             'level': 'DEBUG',
-#             'propagate': True,
-#         },
-#     },
-# }

@@ -153,4 +153,4 @@ AUTHENTICATION_BACKENDS = (
     'recipes.backends.EmailAuthBackend',
 )
 
-AUTH_USER_MODEL = 'recipes.User'
+AUTH_USER_MODEL = 'users.User'

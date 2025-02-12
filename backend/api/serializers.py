@@ -7,8 +7,8 @@ from django.core.files.base import ContentFile
 from django.contrib.auth import authenticate, get_user_model
 from djoser.serializers import UserCreateSerializer
 
-from ..recipes.models import (Recipe, Ingredient, Tag, RecipeIngredient,
-                              FavoriteRecipe, ShoppingList, Subscription)
+from recipes.models import (Recipe, Ingredient, Tag, RecipeIngredient,
+                            FavoriteRecipe, ShoppingList, Subscription)
 
 User = get_user_model()
 

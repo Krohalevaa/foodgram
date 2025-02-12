@@ -23,13 +23,13 @@ app_name = 'api'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include(router.urls)),
-    path('api/', include('djoser.urls')),
-    path('api/users/me/', UserViewSet.as_view({'get': 'retrieve'}),
+    path('', include(router.urls)),
+    path('', include('djoser.urls')),
+    path('users/me/', UserViewSet.as_view({'get': 'retrieve'}),
          name='user-me'),
-    path('api/users/me/avatar/', UserAvatarUpdateView.as_view(),
+    path('users/me/avatar/', UserAvatarUpdateView.as_view(),
          name='user-avatar-update'),
-    path('api/auth/', include('djoser.urls.authtoken')),
+    path('auth/', include('djoser.urls.authtoken')),
 ]
 
 if settings.DEBUG:

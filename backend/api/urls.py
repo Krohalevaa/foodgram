@@ -19,6 +19,7 @@ router.register(r'favorites', FavoriteViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'shopping_cart', ShopListViewSet, basename='shopping_cart')
 
+app_name = 'api'
 
 urlpatterns = [
     path('admin/', admin.site.urls),

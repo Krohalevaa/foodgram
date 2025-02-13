@@ -2,7 +2,7 @@
 
 from rest_framework.pagination import PageNumberPagination
 
-DEFAULT_PAGE_SIZE = 6
+from recipes.constants import DEFAULT_PAGE_SIZE
 
 
 class CustomPagination(PageNumberPagination):

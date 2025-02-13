@@ -1,7 +1,7 @@
 """Модуль моделей для работы с рецептами и подписками."""
 
 from django.db import models
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from slugify import slugify
 
 from users.models import User
@@ -54,8 +54,8 @@ class Tag(models.Model):
         verbose_name='Слаг')
     color = models.CharField(
         max_length=7,
-        verbose_name="Цвет в HEX",
-        default="#FFFFFF")
+        verbose_name='Цвет в HEX',
+        default='#FFFFFF')
 
     class Meta:
         """Метаданные для настройки модели тега."""
@@ -93,9 +93,7 @@ class Recipe(models.Model):
         null=True)
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления рецепта в минутах',
-        validators=[MinValueValidator(1)])
-    # cooking_time = models.PositiveIntegerField(
-    #     verbose_name='Время приготовления рецепта в минутах',)
+        validators=[MinValueValidator(1), MaxValueValidator(1440)])
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -125,6 +123,10 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
         ordering = ('creation_date',)
 
+    def __str__(self):
+        """Возвращает строку объекта - название рецепта."""
+        return self.name
+
     def save(self, *args, **kwargs):
         """Переопределяет метод сохранения.
 
@@ -137,14 +139,10 @@ class Recipe(models.Model):
             slug = base_slug
             counter = 1
             while Recipe.objects.filter(slug=slug).exists():
-                slug = f"{base_slug}-{counter}"
+                slug = f'{base_slug}-{counter}'
                 counter += 1
             self.slug = slug
         super().save(*args, **kwargs)
-
-    def __str__(self):
-        """Возвращает строку объекта - название рецепта."""
-        return self.name
 
 
 class RecipeIngredient(models.Model):
@@ -165,10 +163,9 @@ class RecipeIngredient(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Ингредиент',
         related_name='ingredient_recipes',)
-    amount = models.FloatField(
+    amount = models.PositiveSmallIntegerField(
         verbose_name='Количество ингредиента',
-        validators=[MinValueValidator(1,
-                                      message='Минимальное количество = 1')])
+        validators=[MinValueValidator(1), MaxValueValidator(10000)])
 
     class Meta:
         """Метаданные для настройки модели связи ингредиента и рецепта."""
@@ -182,34 +179,7 @@ class RecipeIngredient(models.Model):
         Возвращает количество и единица измерения ингредиента.
         """
         return (
-            f"{self.amount} {self.ingredient.unit} of {self.ingredient.name}")
-
-
-class RecipeTag(models.Model):
-    """
-    Модель для связи между рецептом и тэгом.
-
-    Эта модель используется для связи рецепта с тегами, которые
-    могут быть присвоены рецепту.
-    """
-
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='recipe_tags',
-        verbose_name='Рецепт')
-
-    tag = models.ForeignKey(
-        Tag,
-        on_delete=models.CASCADE,
-        related_name='tag_recipes',
-        verbose_name='Тег')
-
-    class Meta:
-        """Метаданные для настройки модели связи тега и рецепта."""
-
-        verbose_name = 'Тег рецепта'
-        verbose_name_plural = 'Теги рецепта'
+            f'{self.amount} {self.ingredient.unit} of {self.ingredient.name}')
 
 
 class FavoriteRecipe(models.Model):
@@ -241,7 +211,7 @@ class FavoriteRecipe(models.Model):
 
     def __str__(self):
         """Возвращает строку объекта - пользователь и рецепт."""
-        return f"{self.user.username} -> {self.recipe.name}"
+        return f'{self.user.username} -> {self.recipe.name}'
 
 
 class ShoppingList(models.Model):
@@ -274,7 +244,7 @@ class ShoppingList(models.Model):
 
     def __str__(self):
         """Возвращает строку объекта - имя пользователя и название рецепта."""
-        return f"Список покупок для {self.user.username}: {self.recipe.name}"
+        return f'Список покупок для {self.user.username}: {self.recipe.name}'
 
 
 class Subscription(models.Model):
@@ -305,4 +275,4 @@ class Subscription(models.Model):
 
     def __str__(self):
         """Возвращает строковое представление объекта - автор и подписчик."""
-        return f"{self.author} -> {self.subscriber}"
+        return f'{self.author} -> {self.subscriber}'

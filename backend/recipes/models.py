@@ -16,10 +16,10 @@ class Ingredient(models.Model):
     Включает название ингредиента и его единицу измерения.
     """
 
-    name: models.CharField = models.CharField(
+    name = models.CharField(
         max_length=100,
         verbose_name='Название ингредиента')
-    unit: models.CharField = models.CharField(
+    unit = models.CharField(
         max_length=50,
         verbose_name='Единица измерения')
 
@@ -44,15 +44,15 @@ class Tag(models.Model):
     Каждый тег имеет уникальное название и слаг, а также цвет в формате HEX.
     """
 
-    name: models.CharField = models.CharField(
+    name = models.CharField(
         max_length=35,
         unique=True,
         verbose_name='Название тэга записи')
-    slug: models.SlugField = models.SlugField(
+    slug = models.SlugField(
         max_length=100,
         unique=True,
         verbose_name='Слаг')
-    color: models.CharField = models.CharField(
+    color = models.CharField(
         max_length=7,
         verbose_name="Цвет в HEX",
         default="#FFFFFF")
@@ -78,10 +78,10 @@ class Recipe(models.Model):
     Каждый рецепт также имеет уникальный слаг и дату создания.
     """
 
-    name: models.CharField = models.CharField(
+    name = models.CharField(
         max_length=255,
         verbose_name='Заголовок рецепта')
-    text: models.TextField = models.TextField(
+    text = models.TextField(
         max_length=255,
         verbose_name='Описание рецепта',
         blank=True,
@@ -91,27 +91,30 @@ class Recipe(models.Model):
         verbose_name='Фото рецепта',
         blank=True,
         null=True)
-    cooking_time: models.PositiveIntegerField = models.PositiveIntegerField(
-        verbose_name='Время приготовления рецепта в минутах',)
-    author: models.ForeignKey = models.ForeignKey(
+    cooking_time = models.PositiveSmallIntegerField(
+        verbose_name='Время приготовления рецепта в минутах',
+        validators=[MinValueValidator(1)])
+    # cooking_time = models.PositiveIntegerField(
+    #     verbose_name='Время приготовления рецепта в минутах',)
+    author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='recipes',
         verbose_name='Автор рецепта',)
-    tags: models.ManyToManyField = models.ManyToManyField(
+    tags = models.ManyToManyField(
         Tag,
         through='RecipeTag',
         related_name='recipes',
         verbose_name='Тэги рецепта',)
-    ingredients: models.ManyToManyField = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         Ingredient,
         through='RecipeIngredient',
         related_name='recipes',
         verbose_name='Ингредиенты в рецепте')
-    slug: models.SlugField = models.SlugField(
+    slug = models.SlugField(
         unique=True,
         blank=True)
-    creation_date: models.DateField = models.DateField(
+    creation_date = models.DateField(
         auto_now_add=True,
         verbose_name='Дата создания рецепта')
 
@@ -152,17 +155,17 @@ class RecipeIngredient(models.Model):
     ингредиенты используются в рецепте, и в каком количестве.
     """
 
-    recipe: models.ForeignKey = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='recipe_ingredients',
         verbose_name='Рецепт',)
-    ingredient: models.ForeignKey = models.ForeignKey(
+    ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
         verbose_name='Ингредиент',
         related_name='ingredient_recipes',)
-    amount: models.FloatField = models.FloatField(
+    amount = models.FloatField(
         verbose_name='Количество ингредиента',
         validators=[MinValueValidator(1,
                                       message='Минимальное количество = 1')])
@@ -190,13 +193,13 @@ class RecipeTag(models.Model):
     могут быть присвоены рецепту.
     """
 
-    recipe: models.ForeignKey = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='recipe_tags',
         verbose_name='Рецепт')
 
-    tag: models.ForeignKey = models.ForeignKey(
+    tag = models.ForeignKey(
         Tag,
         on_delete=models.CASCADE,
         related_name='tag_recipes',
@@ -218,12 +221,12 @@ class FavoriteRecipe(models.Model):
     Один пользователь может добавить один рецепт в избранное только один раз.
     """
 
-    user: models.ForeignKey = models.ForeignKey(
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='favorite_recipes',
         verbose_name='Пользователь')
-    recipe: models.ForeignKey = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='favorited_by_users',
@@ -251,12 +254,12 @@ class ShoppingList(models.Model):
     только один раз.
     """
 
-    user: models.ForeignKey = models.ForeignKey(
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='shopping_list',
         verbose_name='Пользователь')
-    recipe: models.ForeignKey = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='shopping_lists',
@@ -283,12 +286,12 @@ class Subscription(models.Model):
     Один пользователь может подписаться на другого пользователя.
     """
 
-    author: models.ForeignKey = models.ForeignKey(
+    author = models.ForeignKey(
         User,
         related_name='subscribers',
         on_delete=models.CASCADE,
         verbose_name='Автор рецепта')
-    subscriber: models.ForeignKey = models.ForeignKey(
+    subscriber = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='subscriptions',

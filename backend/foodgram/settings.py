@@ -5,16 +5,6 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECRET_KEY = 'django-insecure-6a+c_r2r==$n*j)642((7ppa5(exm376-32b=4dte8w2oer04j'
-
-# DEBUG = True
-
-# ALLOWED_HOSTS = [
-#     'localhost',
-#     '127.0.0.1',
-#     '89.169.161.149',
-#     'foodgram-net.hopto.org',
-# ]
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'default-secret-key')
 
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
@@ -145,8 +135,8 @@ DJOSER = {
 CORS_URLS_REGEX = r'^/api/.*$'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    "http://localhost:8000",
-    "https://foodgram-net.hopto.org",
+    'http://localhost:8000',
+    'https://foodgram-net.hopto.org',
 ]
 CSV_FILES_DIR = os.path.join(BASE_DIR, 'data')
 
@@ -155,7 +145,6 @@ CSRF_TRUSTED_ORIGINS = ['https://foodgram-net.hopto.org']
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'recipes.backends.EmailAuthBackend',
 )
 
 AUTH_USER_MODEL = 'users.User'

@@ -165,7 +165,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         # Сериализация тегов
         representation['tags'] = TagSerializer(
-            instance.tags.all(), 
+            instance.tags.all(),
             many=True
         ).data
         # Формирование списка ингредиентов

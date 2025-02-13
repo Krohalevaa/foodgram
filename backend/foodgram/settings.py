@@ -146,3 +146,5 @@ CSRF_TRUSTED_ORIGINS = ['https://foodgram-net.hopto.org']
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
 
 AUTH_USER_MODEL = 'users.User'
+
+ACCOUNT_LOGOUT_REDIRECT_URL = '/login/'

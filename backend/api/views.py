@@ -89,12 +89,12 @@ class UserViewSet(viewsets.ModelViewSet):
     def set_password(self, request):
         """Изменение пароля текущего пользователя."""
         user = request.user
-        new_password = request.data.get("new_password")
+        new_password = request.data.get('new_password')
         if not new_password:
-            return Response({"error": "Новый пароль обязателен"}, status=400)
+            return Response({'error': 'Новый пароль обязателен'}, status=400)
         user.set_password(new_password)
         user.save()
-        return Response({"status": "Пароль успешно изменён"}, status=200)
+        return Response({'status': 'Пароль успешно изменён'}, status=200)
 
     @action(detail=True,
             methods=['post', 'delete'],
@@ -105,33 +105,29 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if request.user == author:
             return Response(
-                {"error": "Нельзя подписаться или отписаться от самого себя."},
+                {'error': 'Нельзя подписаться или отписаться от самого себя.'},
                 status=status.HTTP_400_BAD_REQUEST)
-
-        # POST запрос - подписка
         if request.method == 'POST':
             subscription, created = Subscription.objects.get_or_create(
                 author=author,
                 subscriber=request.user)
             if created:
                 return Response(
-                    {"status": f"Вы подписались на {author.username}"},
+                    {'status': f'Вы подписались на {author.username}'},
                     status=status.HTTP_201_CREATED)
             return Response(
-                {"status": f"Вы уже подписаны на {author.username}"},
+                {'status': f'Вы уже подписаны на {author.username}'},
                 status=status.HTTP_400_BAD_REQUEST)
-
-        # DELETE запрос - отписка
         elif request.method == 'DELETE':
             subscription = Subscription.objects.filter(author=author,
                                                        subscriber=request.user)
             if subscription.exists():
                 subscription.delete()
                 return Response(
-                    {"status": f"Вы отписались от {author.username}"},
+                    {'status': f'Вы отписались от {author.username}'},
                     status=status.HTTP_204_NO_CONTENT)
             return Response(
-                {"error": f"Вы не подписаны на {author.username}"},
+                {'error': f'Вы не подписаны на {author.username}'},
                 status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True,
@@ -177,7 +173,6 @@ class UserViewSet(viewsets.ModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с рецептами."""
 
-    # queryset = Recipe.objects.all()
     queryset = Recipe.objects.all().select_related('author').prefetch_related(
         'tags', 'ingredients')
     serializer_class = RecipeSerializer
@@ -200,11 +195,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Фильтруем рецепты по избранному и списку покупок."""
         queryset = Recipe.objects.all()
         request = self.request
-        is_favorited = request.query_params.get("is_favorited")
-        if request.user.is_authenticated and is_favorited == "1":
+        is_favorited = request.query_params.get('is_favorited')
+        if request.user.is_authenticated and is_favorited == '1':
             queryset = queryset.filter(favorited_by_users__user=request.user)
-        is_in_shopping_cart = request.query_params.get("is_in_shopping_cart")
-        if request.user.is_authenticated and is_in_shopping_cart == "1":
+        is_in_shopping_cart = request.query_params.get('is_in_shopping_cart')
+        if request.user.is_authenticated and is_in_shopping_cart == '1':
             queryset = queryset.filter(shopping_lists__user=request.user)
         return queryset
 
@@ -243,7 +238,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_link(self, request, pk=None):
         """Получение короткой ссылки на рецепт."""
         recipe = self.get_object()
-        return Response({"short_link": f"/api/recipes/{recipe.slug}/"})
+        return Response({'short_link': f'/api/recipes/{recipe.slug}/'})
 
     @action(detail=True,
             methods=['post', 'delete'],
@@ -301,32 +296,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
             for recipe_ingredient in item.recipe.recipe_ingredients.all():
                 ingredient = recipe_ingredient.ingredient
                 ingredients[
-                    f"{ingredient.name} ({ingredient.unit})"
+                    f'{ingredient.name} ({ingredient.unit})'
                 ] += recipe_ingredient.amount
         return ingredients
 
     def generate_shopping_cart_content(self, ingredients):
         """Генерирует контент для скачивания в виде текста."""
         return '\n'.join(
-            f"{name} — {amount}" for name, amount in ingredients.items())
-    # @action(detail=False, methods=['get'], url_path='download_shopping_cart')
-    # def download_shopping_cart(self, request, *args, **kwargs):
-    #     """Скачивание списка покупок для текущего пользователя."""
-    #     shopping_list = ShoppingList.objects.filter(user=request.user)
-    #     ingredients = defaultdict(float)
-    #     for item in shopping_list:
-    #         for recipe_ingredient in item.recipe.recipe_ingredients.all():
-    #             ingredient = recipe_ingredient.ingredient
-    #             ingredients[
-    #                 f"{ingredient.name} ({ingredient.unit})"
-    #             ] += recipe_ingredient.amount
-    #     content = "\n".join(
-    #         f"{name} — {amount}" for name, amount in ingredients.items())
-    #     response = HttpResponse(content, content_type='text/plain')
-    #     response[
-    #         'Content-Disposition'] = 'attachment;
-    # filename="shopping_list.txt"'
-    #     return response
+            f'{name} — {amount}' for name, amount in ingredients.items())
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):

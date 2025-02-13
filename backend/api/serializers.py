@@ -69,7 +69,6 @@ class IngredientSerializer(serializers.ModelSerializer):
 
         model = Ingredient
         fields = ('id', 'name', 'unit')
-        # fields = '__all__'
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -80,7 +79,6 @@ class TagSerializer(serializers.ModelSerializer):
 
         model = Tag
         fields = ('id', 'name', 'slug', 'color')
-        # fields = '__all__'
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):

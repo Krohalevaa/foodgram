@@ -182,7 +182,7 @@ class RecipeIngredient(models.Model):
             f'{self.amount} {self.ingredient.unit} of {self.ingredient.name}')
 
 
-class RecipeTag(models.Model):
+class RecipeTag(models.Model):  # Если это возможно, я бы хотела оставить эту модель
     """
     Модель для связи между рецептом и тэгом.
 

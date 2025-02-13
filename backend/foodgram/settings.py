@@ -143,8 +143,6 @@ CSV_FILES_DIR = os.path.join(BASE_DIR, 'data')
 CSRF_TRUSTED_ORIGINS = ['https://foodgram-net.hopto.org']
 
 
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-)
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
 
 AUTH_USER_MODEL = 'users.User'

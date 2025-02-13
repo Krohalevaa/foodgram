@@ -36,10 +36,6 @@ class User(AbstractUser):
         blank=True,
         null=True,
         verbose_name='Аватар пользователя')
-    # groups = models.ManyToManyField(
-    #     Group,
-    #     related_name='custom_users',
-    #     blank=True)
     user_permissions = models.ManyToManyField(
         Permission,
         related_name='custom_users_permissions',

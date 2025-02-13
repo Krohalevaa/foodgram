@@ -13,20 +13,20 @@ from recipes.models import (Recipe, Ingredient, Tag, RecipeIngredient,
 User = get_user_model()
 
 
-class UserLoginSerializer(serializers.Serializer):
-    """Сериализатор для аутентификации пользователей."""
+# class UserLoginSerializer(serializers.Serializer):
+#     """Сериализатор для аутентификации пользователей."""
 
-    email = serializers.EmailField()
-    password = serializers.CharField()
+#     email = serializers.EmailField()
+#     password = serializers.CharField()
 
-    def validate(self, data):
-        """Проверяет корректность учетных данных пользователя."""
-        email = data['email']
-        password = data['password']
-        user = authenticate(email=email, password=password)
-        if user is None:
-            raise serializers.ValidationError("Invalid credentials")
-        return user
+#     def validate(self, data):
+#         """Проверяет корректность учетных данных пользователя."""
+#         email = data['email']
+#         password = data['password']
+#         user = authenticate(email=email, password=password)
+#         if user is None:
+#             raise serializers.ValidationError("Invalid credentials")
+#         return user
 
 
 class Base64ImageField(serializers.ImageField):

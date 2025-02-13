@@ -215,19 +215,25 @@ class RecipeSerializer(serializers.ModelSerializer):
                 recipe=obj).exists()
         return False
 
-    def create(self, validated_data):
-        """Создает новый рецепт на основе валидных данных."""
-        ingredients_data = validated_data.pop('recipe_ingredients', [])
-        tags = validated_data.pop('tags', [])
-        recipe = Recipe.objects.create(**validated_data)
+    def _update_tags_and_ingredients(self, recipe, tags, ingredients_data):
+        """Обновляет теги и ингредиенты рецепта, избегая дублирования кода."""
         recipe.tags.set(tags)
+        recipe.recipe_ingredients.all().delete()
         ingredients = [
             RecipeIngredient(
                 recipe=recipe,
                 ingredient=item['ingredient'],
                 amount=item['amount']
-            ) for item in ingredients_data]
+            ) for item in ingredients_data
+        ]
         RecipeIngredient.objects.bulk_create(ingredients)
+
+    def create(self, validated_data):
+        """Создает новый рецепт на основе валидных данных."""
+        ingredients_data = validated_data.pop('recipe_ingredients', [])
+        tags = validated_data.pop('tags', [])
+        recipe = Recipe.objects.create(**validated_data)
+        self._update_tags_and_ingredients(recipe, tags, ingredients_data)
         return recipe
 
     def update(self, instance, validated_data):
@@ -235,16 +241,38 @@ class RecipeSerializer(serializers.ModelSerializer):
         ingredients_data = validated_data.pop('recipe_ingredients', [])
         tags = validated_data.pop('tags', [])
         instance = super().update(instance, validated_data)
-        instance.tags.set(tags)
-        instance.recipe_ingredients.all().delete()
-        ingredients = [
-            RecipeIngredient(
-                recipe=instance,
-                ingredient=item['ingredient'],
-                amount=item['amount']
-            ) for item in ingredients_data]
-        RecipeIngredient.objects.bulk_create(ingredients)
+        self._update_tags_and_ingredients(instance, tags, ingredients_data)
         return instance
+    # def create(self, validated_data):
+    #     """Создает новый рецепт на основе валидных данных."""
+    #     ingredients_data = validated_data.pop('recipe_ingredients', [])
+    #     tags = validated_data.pop('tags', [])
+    #     recipe = Recipe.objects.create(**validated_data)
+    #     recipe.tags.set(tags)
+    #     ingredients = [
+    #         RecipeIngredient(
+    #             recipe=recipe,
+    #             ingredient=item['ingredient'],
+    #             amount=item['amount']
+    #         ) for item in ingredients_data]
+    #     RecipeIngredient.objects.bulk_create(ingredients)
+    #     return recipe
+
+    # def update(self, instance, validated_data):
+    #     """Обновляет существующий рецепт на основе валидных данных."""
+    #     ingredients_data = validated_data.pop('recipe_ingredients', [])
+    #     tags = validated_data.pop('tags', [])
+    #     instance = super().update(instance, validated_data)
+    #     instance.tags.set(tags)
+    #     instance.recipe_ingredients.all().delete()
+    #     ingredients = [
+    #         RecipeIngredient(
+    #             recipe=instance,
+    #             ingredient=item['ingredient'],
+    #             amount=item['amount']
+    #         ) for item in ingredients_data]
+    #     RecipeIngredient.objects.bulk_create(ingredients)
+    #     return instance
 
     def get_is_in_shopping_cart(self, obj):
         """Метод для определения, находится ли рецепт в списке покупок."""
@@ -304,12 +332,12 @@ class UserSerializer(serializers.ModelSerializer):
                 subscriber=user).exists()
         return False
 
-    def update(self, instance, validated_data):
-        """Обновляет данные экземпляра модели на основе данных."""
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        return instance
+    # def update(self, instance, validated_data):
+    #     """Обновляет данные экземпляра модели на основе данных."""
+    #     for attr, value in validated_data.items():
+    #         setattr(instance, attr, value)
+    #     instance.save()
+    #     return instance
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -338,13 +366,25 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         """Возвращает список рецептов автора подписки."""
         recipes_limit = self.context.get('recipes_limit')
         recipes_qs = obj.author.recipes.all()
-        if recipes_limit:
-            try:
-                recipes_limit = int(recipes_limit)
-                recipes_qs = recipes_qs[:recipes_limit]
-            except ValueError:
-                pass
+
+        if isinstance(recipes_limit, int):
+            recipes_qs = recipes_qs[:recipes_limit]
+        elif isinstance(recipes_limit, str) and recipes_limit.isdigit():
+            recipes_qs = recipes_qs[:int(recipes_limit)]
+
         serializer = RecipeSerializer(recipes_qs,
                                       many=True,
                                       context=self.context)
         return serializer.data
+        # recipes_limit = self.context.get('recipes_limit')
+        # recipes_qs = obj.author.recipes.all()
+        # if recipes_limit:
+        #     try:
+        #         recipes_limit = int(recipes_limit)
+        #         recipes_qs = recipes_qs[:recipes_limit]
+        #     except ValueError:
+        #         pass
+        # serializer = RecipeSerializer(recipes_qs,
+        #                               many=True,
+        #                               context=self.context)
+        # return serializer.data

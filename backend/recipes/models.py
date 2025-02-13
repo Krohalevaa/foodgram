@@ -101,7 +101,7 @@ class Recipe(models.Model):
         verbose_name='Автор рецепта',)
     tags = models.ManyToManyField(
         Tag,
-        # through='RecipeTag',
+        through='RecipeTag',
         related_name='recipes',
         verbose_name='Тэги рецепта',)
     ingredients = models.ManyToManyField(
@@ -180,6 +180,32 @@ class RecipeIngredient(models.Model):
         """
         return (
             f'{self.amount} {self.ingredient.unit} of {self.ingredient.name}')
+
+
+class RecipeTag(models.Model):
+    """
+    Модель для связи между рецептом и тэгом.
+
+    Эта модель используется для связи рецепта с тегами, которые
+    могут быть присвоены рецепту.
+    """
+
+    recipe: models.ForeignKey = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='recipe_tags',
+        verbose_name='Рецепт')
+    tag: models.ForeignKey = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE,
+        related_name='tag_recipes',
+        verbose_name='Тег')
+
+    class Meta:
+        """Метаданные для настройки модели связи тега и рецепта."""
+
+        verbose_name = 'Тег рецепта'
+        verbose_name_plural = 'Теги рецепта'
 
 
 class FavoriteRecipe(models.Model):

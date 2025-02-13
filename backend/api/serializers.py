@@ -68,7 +68,8 @@ class IngredientSerializer(serializers.ModelSerializer):
         """Метаданные для настройки сериализатора ингредиентов."""
 
         model = Ingredient
-        fields = '__all__'
+        fields = ('id', 'name', 'unit')
+        # fields = '__all__'
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -78,7 +79,8 @@ class TagSerializer(serializers.ModelSerializer):
         """Метаданные для настройки сериализатора тэга."""
 
         model = Tag
-        fields = '__all__'
+        fields = ('id', 'name', 'slug', 'color')
+        # fields = '__all__'
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -107,7 +109,7 @@ class RecipeIngredientInputSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(),
         source='ingredient')
-    amount = serializers.FloatField()
+    # amount = serializers.FloatField()
 
     class Meta:
         """Метаданные для настройки сериализатора ввода."""
@@ -120,7 +122,7 @@ class RecipeIngredientOutputSerializer(serializers.ModelSerializer):
     """Сериализатор для вывода ингредиентов в рецепте."""
 
     ingredient = IngredientSerializer(read_only=True)
-    amount = serializers.FloatField()
+    # amount = serializers.FloatField()
 
     class Meta:
         """Метаданные для настройки сериализатора вывода."""
@@ -160,18 +162,38 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         """Преобразует модель рецепта в словарь для сериализации."""
-        rep = super().to_representation(instance)
-        rep['tags'] = TagSerializer(instance.tags.all(), many=True).data
-        rep['ingredients'] = [
+        representation = super().to_representation(instance)
+        # Сериализация тегов
+        representation['tags'] = TagSerializer(
+            instance.tags.all(), 
+            many=True
+        ).data
+        # Формирование списка ингредиентов
+        representation['ingredients'] = [
             {
-                'id': ri.ingredient.id,
-                'name': ri.ingredient.name,
-                'unit': ri.ingredient.unit,
-                'amount': ri.amount
+                'id': recipe_ingredient.ingredient.id,
+                'name': recipe_ingredient.ingredient.name,
+                'unit': recipe_ingredient.ingredient.unit,
+                'amount': recipe_ingredient.amount
             }
-            for ri in instance.recipe_ingredients.all()
+            for recipe_ingredient in instance.recipe_ingredients.all()
         ]
-        return rep
+        return representation
+
+    # def to_representation(self, instance):
+    #     """Преобразует модель рецепта в словарь для сериализации."""
+    #     rep = super().to_representation(instance)
+    #     rep['tags'] = TagSerializer(instance.tags.all(), many=True).data
+    #     rep['ingredients'] = [
+    #         {
+    #             'id': ri.ingredient.id,
+    #             'name': ri.ingredient.name,
+    #             'unit': ri.ingredient.unit,
+    #             'amount': ri.amount
+    #         }
+    #         for ri in instance.recipe_ingredients.all()
+    #     ]
+    #     return rep
 
     def get_author(self, obj):
         """Получает информацию об авторе рецепта."""
@@ -241,7 +263,8 @@ class FavoriteRecipeSerializer(serializers.ModelSerializer):
         """Метаданные для настройки сериализатора избранного."""
 
         model = FavoriteRecipe
-        fields = '__all__'
+        fields = ('id', 'user', 'recipe')
+        # fields = '__all__'
 
 
 class ShoppingListSerializer(serializers.ModelSerializer):
@@ -251,7 +274,8 @@ class ShoppingListSerializer(serializers.ModelSerializer):
         """Метаданные для настройки сериализатора списка покупок."""
 
         model = ShoppingList
-        fields = '__all__'
+        fields = ('id', 'user', 'recipe')
+        # fields = '__all__'
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -306,7 +330,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         """Метаданные для настройки сериализатора подписок."""
 
         model = Subscription
-        fields = '__all__'
+        fields = ('id', 'author', 'subscriber', 'recipes',
+                  'username', 'first_name', 'last_name', 'avatar')
+        # fields = '__all__'
 
     def get_recipes(self, obj):
         """Возвращает список рецептов автора подписки."""

@@ -2,6 +2,7 @@
 
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
+from recipes.constants import MAX_LENGHT, MAX_LENGHT_EAMAIL
 
 
 class User(AbstractUser):
@@ -18,34 +19,34 @@ class User(AbstractUser):
 
     email = models.EmailField(
         unique=True,
-        max_length=50,
+        max_length=MAX_LENGHT_EAMAIL,
         verbose_name='Электронная почта')
     username = models.CharField(
         unique=True,
-        max_length=50,
+        max_length=MAX_LENGHT,
         verbose_name='Никнейм пользователя')
     first_name = models.CharField(
-        max_length=50,
+        max_length=MAX_LENGHT,
         verbose_name='Имя пользователя')
     last_name = models.CharField(
-        max_length=50,
+        max_length=MAX_LENGHT,
         verbose_name='Фамилия пользователя')
     avatar = models.ImageField(
         upload_to='avatars/',
         blank=True,
         null=True,
         verbose_name='Аватар пользователя')
-    groups = models.ManyToManyField(
-        Group,
-        related_name='custom_users',
-        blank=True)
+    # groups = models.ManyToManyField(
+    #     Group,
+    #     related_name='custom_users',
+    #     blank=True)
     user_permissions = models.ManyToManyField(
         Permission,
         related_name='custom_users_permissions',
         blank=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
         """

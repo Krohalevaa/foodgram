@@ -18,7 +18,7 @@ class Command(BaseCommand):
         help (str): Описание команды для `manage.py help`.
     """
 
-    help = "Загружает ингредиенты из CSV файла (без заголовков)"
+    help = 'Загружает ингредиенты из CSV файла (без заголовков)'
 
     def add_arguments(self, parser):
         """
@@ -30,7 +30,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--path',
             type=str,
-            help="/data/ingredients.csv/",
+            help='/data/ingredients.csv/',
             default=os.path.join(settings.BASE_DIR, 'data', 'ingredients.csv')
         )
 
@@ -45,7 +45,7 @@ class Command(BaseCommand):
             **options: Словарь аргументов командной строки.
         """
         csv_path = options['path']
-        self.stdout.write(f"Чтение файла: {csv_path}")
+        self.stdout.write(f'Чтение файла: {csv_path}')
 
         try:
             with open(csv_path, newline='', encoding='utf-8') as csvfile:
@@ -54,13 +54,13 @@ class Command(BaseCommand):
                 for row in reader:
                     if not row or len(row) < 2:
                         self.stdout.write(
-                            "Пропущена пустая или некорректная строка.")
+                            'Пропущена пустая или некорректная строка.')
                         continue
                     name = row[0].strip()
                     unit = row[1].strip()
                     if not name:
                         self.stdout.write(
-                            "Строка пропущена, т.к. имя не указано.")
+                            'Строка пропущена, т.к. имя не указано.')
                         continue
                     ingredient, created = Ingredient.objects.get_or_create(
                         name=name,
@@ -69,6 +69,6 @@ class Command(BaseCommand):
                     if created:
                         count += 1
                 self.stdout.write(self.style.SUCCESS(
-                    f"Загружено {count} ингредиентов."))
+                    f'Загружено {count} ингредиентов.'))
         except FileNotFoundError:
-            self.stderr.write(self.style.ERROR(f"Файл не найден: {csv_path}"))
+            self.stderr.write(self.style.ERROR(f'Файл не найден: {csv_path}'))

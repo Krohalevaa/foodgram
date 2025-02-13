@@ -1,6 +1,6 @@
 """Модуль моделей для работы с пользователями."""
 
-from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.contrib.auth.models import AbstractUser, Permission
 from django.db import models
 from recipes.constants import MAX_LENGHT, MAX_LENGHT_EAMAIL
 

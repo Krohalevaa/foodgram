@@ -1,3 +1,4 @@
+"""Константы."""
 
 MAX_LENGHT = 50
 MAX_LENGHT_EAMAIL = 254

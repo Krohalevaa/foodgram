@@ -5,6 +5,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from slugify import slugify
 
 from users.models import User
+from recipes.constants import (MAX_LENGHT_NAME, MAX_LENGHT_UNIT,
+                               MAX_LENGHT_NAME_TAG, MAX_LENGHT_NAME_TEXT)
 
 
 class Ingredient(models.Model):
@@ -17,10 +19,10 @@ class Ingredient(models.Model):
     """
 
     name = models.CharField(
-        max_length=100,
+        max_length=MAX_LENGHT_NAME,
         verbose_name='Название ингредиента')
     unit = models.CharField(
-        max_length=50,
+        max_length=MAX_LENGHT_UNIT,
         verbose_name='Единица измерения')
 
     class Meta:
@@ -45,11 +47,11 @@ class Tag(models.Model):
     """
 
     name = models.CharField(
-        max_length=35,
+        max_length=MAX_LENGHT_NAME_TAG,
         unique=True,
         verbose_name='Название тэга записи')
     slug = models.SlugField(
-        max_length=100,
+        max_length=MAX_LENGHT_NAME_TAG,
         unique=True,
         verbose_name='Слаг')
     color = models.CharField(
@@ -79,18 +81,15 @@ class Recipe(models.Model):
     """
 
     name = models.CharField(
-        max_length=255,
+        max_length=MAX_LENGHT_NAME,
         verbose_name='Заголовок рецепта')
     text = models.TextField(
-        max_length=255,
-        verbose_name='Описание рецепта',
-        blank=True,
-        null=True)
+        max_length=MAX_LENGHT_NAME_TEXT,
+        verbose_name='Описание рецепта')
     image = models.ImageField(
         upload_to='recipes/images/',
         verbose_name='Фото рецепта',
-        blank=True,
-        null=True)
+        blank=True)
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления рецепта в минутах',
         validators=[MinValueValidator(1), MaxValueValidator(1440)])
@@ -101,7 +100,6 @@ class Recipe(models.Model):
         verbose_name='Автор рецепта',)
     tags = models.ManyToManyField(
         Tag,
-        through='RecipeTag',
         related_name='recipes',
         verbose_name='Тэги рецепта',)
     ingredients = models.ManyToManyField(
@@ -180,32 +178,6 @@ class RecipeIngredient(models.Model):
         """
         return (
             f'{self.amount} {self.ingredient.unit} of {self.ingredient.name}')
-
-
-# class RecipeTag(models.Model):  # Если это возможно, я бы хотела оставить это
-#     """
-#     Модель для связи между рецептом и тэгом.
-
-#     Эта модель используется для связи рецепта с тегами, которые
-#     могут быть присвоены рецепту.
-#     """
-
-#     recipe: models.ForeignKey = models.ForeignKey(
-#         Recipe,
-#         on_delete=models.CASCADE,
-#         related_name='recipe_tags',
-#         verbose_name='Рецепт')
-#     tag: models.ForeignKey = models.ForeignKey(
-#         Tag,
-#         on_delete=models.CASCADE,
-#         related_name='tag_recipes',
-#         verbose_name='Тег')
-
-#     class Meta:
-#         """Метаданные для настройки модели связи тега и рецепта."""
-
-#         verbose_name = 'Тег рецепта'
-#         verbose_name_plural = 'Теги рецепта'
 
 
 class FavoriteRecipe(models.Model):

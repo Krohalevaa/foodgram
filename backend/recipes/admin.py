@@ -15,7 +15,10 @@
 
 from django.contrib import admin
 
-from recipes.models import Recipe, Tag
+from recipes.models import (
+    Recipe, Tag, Ingredient, RecipeIngredient,
+    FavoriteRecipe, ShoppingList, Subscription
+)
 
 
 @admin.register(Tag)
@@ -27,10 +30,56 @@ class TagAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
 
+@admin.register(Ingredient)
+class IngredientAdmin(admin.ModelAdmin):
+    """Административный интерфейс для модели Ingredient."""
+
+    list_display = ('name', 'unit')
+    search_fields = ('name',)
+    list_filter = ('name',)
+
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     """Административный интерфейс для модели Recipe."""
 
-    list_display = ('name', 'author')
+    list_display = ('name', 'author', 'cooking_time', 'creation_date')
     search_fields = ('name', 'author__username')
-    list_filter = ('tags',)
+    list_filter = ('tags', 'author')
+    autocomplete_fields = ('tags', 'ingredients')
+
+
+@admin.register(RecipeIngredient)
+class RecipeIngredientAdmin(admin.ModelAdmin):
+    """Административный интерфейс для связи RecipeIngredient."""
+
+    list_display = ('recipe', 'ingredient', 'amount')
+    search_fields = ('recipe__name', 'ingredient__name')
+    list_filter = ('recipe', 'ingredient')
+
+
+@admin.register(FavoriteRecipe)
+class FavoriteRecipeAdmin(admin.ModelAdmin):
+    """Административный интерфейс для модели FavoriteRecipe."""
+
+    list_display = ('user', 'recipe')
+    search_fields = ('user__username', 'recipe__name')
+    list_filter = ('user', 'recipe')
+
+
+@admin.register(ShoppingList)
+class ShoppingListAdmin(admin.ModelAdmin):
+    """Административный интерфейс для модели ShoppingList."""
+
+    list_display = ('user', 'recipe')
+    search_fields = ('user__username', 'recipe__name')
+    list_filter = ('user',)
+
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    """Административный интерфейс для модели Subscription."""
+
+    list_display = ('author', 'subscriber')
+    search_fields = ('author__username', 'subscriber__username')
+    list_filter = ('author', 'subscriber')

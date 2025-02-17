@@ -275,7 +275,11 @@ class UserSerializer(serializers.ModelSerializer):
 class SubscriptionSerializer(serializers.ModelSerializer):
     """Сериализатор для подписок пользователей."""
 
-    author = UserSerializer(read_only=True)
+    # author = UserSerializer(read_only=True)
+    # recipes = serializers.SerializerMethodField()
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    subscriber = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all())
     recipes = serializers.SerializerMethodField()
     username = serializers.CharField(source='author.username',
                                      read_only=True)
@@ -307,3 +311,11 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                                       many=True,
                                       context=self.context)
         return serializer.data
+
+    def to_representation(self, instance):
+        """Возвращает подробную информацию об авторе подписки в ответе."""
+        representation = super().to_representation(instance)
+        representation['author'] = UserSerializer(instance.author,
+                                                  context=self.context).data
+        # Можно также добавить данные подписчика, если необходимо.
+        return representation

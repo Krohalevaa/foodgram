@@ -100,34 +100,69 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response({'status': 'Пароль успешно изменён'},
                         status=HTTPStatus.OK)
 
-    @action(detail=True,
-            methods=['post', 'delete'],
+    # @action(detail=True,
+    #         methods=['post', 'delete'],
+    #         permission_classes=[permissions.IsAuthenticated])
+    # def subscribe(self, request, pk=None):
+    #     """Подписка или отписка от пользователя."""
+    #     if request.user == pk:
+    #         return Response(
+    #             {'error': 'Нельзя подписаться
+    # или отписаться от самого себя.'},
+    #             status=HTTPStatus.BAD_REQUEST)
+
+    #     if request.method == 'POST':
+    #         # Получаем автора только при необходимости
+    #         author = get_object_or_404(User, pk=pk)
+    #         subscription, created = Subscription.objects.get_or_create(
+    #             author=author,
+    #             subscriber=request.user)
+    #         if created:
+    #             return Response(
+    #                 {'status': f'Вы подписались на {author.username}'},
+    #                 status=HTTPStatus.CREATED)
+    #         return Response(
+    #             {'status': f'Вы уже подписаны на {author.username}'},
+    #             status=HTTPStatus.BAD_REQUEST)
+
+    #     elif request.method == 'DELETE':
+    #         deleted_count, _ = Subscription.objects.filter(
+    #             author__pk=pk,
+    #             subscriber=request.user).delete()
+    #         if deleted_count:
+    #             return Response(
+    #                 {'status': f'Вы отписались от пользователя с ID {pk}'},
+    #                 status=HTTPStatus.NO_CONTENT)
+    #         return Response(
+    #             {'error': f'Вы не подписаны на пользователя с ID {pk}'},
+    #             status=HTTPStatus.BAD_REQUEST)
+
+    @action(detail=True, methods=['post', 'delete'],
             permission_classes=[permissions.IsAuthenticated])
     def subscribe(self, request, pk=None):
         """Подписка или отписка от пользователя."""
-        if request.user == pk:
+        if request.user.id == int(pk):
             return Response(
                 {'error': 'Нельзя подписаться или отписаться от самого себя.'},
                 status=HTTPStatus.BAD_REQUEST)
 
         if request.method == 'POST':
-            # Получаем автора только при необходимости
             author = get_object_or_404(User, pk=pk)
-            subscription, created = Subscription.objects.get_or_create(
-                author=author,
-                subscriber=request.user)
-            if created:
+            data = {'author': author.id, 'subscriber': request.user.id}
+            serializer = SubscriptionSerializer(
+                data=data, context={'request': request})
+            if serializer.is_valid():
+                serializer.save()
                 return Response(
                     {'status': f'Вы подписались на {author.username}'},
                     status=HTTPStatus.CREATED)
-            return Response(
-                {'status': f'Вы уже подписаны на {author.username}'},
-                status=HTTPStatus.BAD_REQUEST)
+            return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
 
         elif request.method == 'DELETE':
             deleted_count, _ = Subscription.objects.filter(
                 author__pk=pk,
-                subscriber=request.user).delete()
+                subscriber=request.user
+            ).delete()
             if deleted_count:
                 return Response(
                     {'status': f'Вы отписались от пользователя с ID {pk}'},

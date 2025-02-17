@@ -100,43 +100,6 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response({'status': 'Пароль успешно изменён'},
                         status=HTTPStatus.OK)
 
-    # @action(detail=True,
-    #         methods=['post', 'delete'],
-    #         permission_classes=[permissions.IsAuthenticated])
-    # def subscribe(self, request, pk=None):
-    #     """Подписка или отписка от пользователя."""
-    #     if request.user == pk:
-    #         return Response(
-    #             {'error': 'Нельзя подписаться
-    # или отписаться от самого себя.'},
-    #             status=HTTPStatus.BAD_REQUEST)
-
-    #     if request.method == 'POST':
-    #         # Получаем автора только при необходимости
-    #         author = get_object_or_404(User, pk=pk)
-    #         subscription, created = Subscription.objects.get_or_create(
-    #             author=author,
-    #             subscriber=request.user)
-    #         if created:
-    #             return Response(
-    #                 {'status': f'Вы подписались на {author.username}'},
-    #                 status=HTTPStatus.CREATED)
-    #         return Response(
-    #             {'status': f'Вы уже подписаны на {author.username}'},
-    #             status=HTTPStatus.BAD_REQUEST)
-
-    #     elif request.method == 'DELETE':
-    #         deleted_count, _ = Subscription.objects.filter(
-    #             author__pk=pk,
-    #             subscriber=request.user).delete()
-    #         if deleted_count:
-    #             return Response(
-    #                 {'status': f'Вы отписались от пользователя с ID {pk}'},
-    #                 status=HTTPStatus.NO_CONTENT)
-    #         return Response(
-    #             {'error': f'Вы не подписаны на пользователя с ID {pk}'},
-    #             status=HTTPStatus.BAD_REQUEST)
-
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[permissions.IsAuthenticated])
     def subscribe(self, request, pk=None):
@@ -232,17 +195,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         context['request'] = self.request
         return context
 
-    def get_queryset(self):
-        """Фильтруем рецепты по избранному и списку покупок."""
-        queryset = Recipe.objects.all()
-        request = self.request
-        is_favorited = request.query_params.get('is_favorited')
-        if request.user.is_authenticated and is_favorited == '1':
-            queryset = queryset.filter(favorited_by_users__user=request.user)
-        is_in_shopping_cart = request.query_params.get('is_in_shopping_cart')
-        if request.user.is_authenticated and is_in_shopping_cart == '1':
-            queryset = queryset.filter(shopping_lists__user=request.user)
-        return queryset
+    # def get_queryset(self):
+    #     """Фильтруем рецепты по избранному и списку покупок."""
+    #     queryset = Recipe.objects.all()
+    #     request = self.request
+    #     is_favorited = request.query_params.get('is_favorited')
+    #     if request.user.is_authenticated and is_favorited == '1':
+    #         queryset = queryset.filter(favorited_by_users__user=request.user)
+    #     is_in_shopping_cart = request.query_params.get('is_in_shopping_cart')
+    #     if request.user.is_authenticated and is_in_shopping_cart == '1':
+    #         queryset = queryset.filter(shopping_lists__user=request.user)
+    #     return queryset
 
     @action(detail=True,
             methods=['post', 'delete'],

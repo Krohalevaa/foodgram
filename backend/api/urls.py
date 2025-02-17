@@ -1,9 +1,8 @@
 """Модуль URL для работы проекта."""
 
 from django.urls import path, include
-
 from django.contrib import admin
-# from django.conf import settings
+
 from rest_framework.routers import DefaultRouter
 
 from .views import (RecipeViewSet, TagViewSet, IngredientViewSet,
@@ -31,10 +30,3 @@ urlpatterns = [
     path('users/me/avatar/', UserAvatarUpdateView.as_view(),
          name='user-avatar-update'),
 ]
-
-# if settings.DEBUG:
-#     from django.conf import settings
-#     from django.conf.urls.static import static
-
-#     urlpatterns += static(settings.MEDIA_URL,
-#                           document_root=settings.MEDIA_ROOT)

@@ -24,27 +24,19 @@ class RecipeFilter(django_filters.FilterSet):
 
     author = filters.CharFilter(
         field_name='author__id',
-        lookup_expr='icontains'
-    )
+        lookup_expr='icontains')
     tags = django_filters.ModelMultipleChoiceFilter(
         field_name='tags__slug',
         queryset=Tag.objects.all(),
-        to_field_name='slug'
-    )
-    # Фильтрация по избранным рецептам
+        to_field_name='slug')
     is_favorited = django_filters.BooleanFilter(
         method='filter_is_favorited')
-
-    # Фильтрация по рецептам в списке покупок
     is_in_shopping_cart = django_filters.BooleanFilter(
         method='filter_is_in_shopping_cart')
 
     class Meta:
-        """Метаданные для настройки фильтрации модели Recipe."""
-
         model = Recipe
         fields = ['author', 'tags', 'is_favorited', 'is_in_shopping_cart']
-        # fields = ('author', 'tags')
 
     def filter_is_favorited(self, queryset, name, value):
         """Фильтруем рецепты по добавлению в избранное."""

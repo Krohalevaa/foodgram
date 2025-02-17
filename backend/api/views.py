@@ -1,5 +1,7 @@
 """Модуль вью для работы с рецептаци и пользователями."""
 
+from http import HTTPStatus
+
 from collections import defaultdict
 
 from rest_framework import viewsets, permissions, status, generics
@@ -74,7 +76,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(UserSerializer(user).data,
                             status=status.HTTP_201_CREATED,
                             headers={'Location': login_url})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
 
     @action(detail=False,
             methods=['get'],
@@ -91,44 +93,48 @@ class UserViewSet(viewsets.ModelViewSet):
         user = request.user
         new_password = request.data.get('new_password')
         if not new_password:
-            return Response({'error': 'Новый пароль обязателен'}, status=400)
+            return Response({'error': 'Новый пароль обязателен'},
+                            status=HTTPStatus.BAD_REQUEST)
         user.set_password(new_password)
         user.save()
-        return Response({'status': 'Пароль успешно изменён'}, status=200)
+        return Response({'status': 'Пароль успешно изменён'},
+                        status=HTTPStatus.OK)
 
     @action(detail=True,
             methods=['post', 'delete'],
             permission_classes=[permissions.IsAuthenticated])
     def subscribe(self, request, pk=None):
         """Подписка или отписка от пользователя."""
-        author = get_object_or_404(User, pk=pk)
-
-        if request.user == author:
+        if request.user == pk:
             return Response(
                 {'error': 'Нельзя подписаться или отписаться от самого себя.'},
-                status=status.HTTP_400_BAD_REQUEST)
+                status=HTTPStatus.BAD_REQUEST)
+
         if request.method == 'POST':
+            # Получаем автора только при необходимости
+            author = get_object_or_404(User, pk=pk)
             subscription, created = Subscription.objects.get_or_create(
                 author=author,
                 subscriber=request.user)
             if created:
                 return Response(
                     {'status': f'Вы подписались на {author.username}'},
-                    status=status.HTTP_201_CREATED)
+                    status=HTTPStatus.CREATED)
             return Response(
                 {'status': f'Вы уже подписаны на {author.username}'},
-                status=status.HTTP_400_BAD_REQUEST)
+                status=HTTPStatus.BAD_REQUEST)
+
         elif request.method == 'DELETE':
-            subscription = Subscription.objects.filter(author=author,
-                                                       subscriber=request.user)
-            if subscription.exists():
-                subscription.delete()
+            deleted_count, _ = Subscription.objects.filter(
+                author__pk=pk,
+                subscriber=request.user).delete()
+            if deleted_count:
                 return Response(
-                    {'status': f'Вы отписались от {author.username}'},
-                    status=status.HTTP_204_NO_CONTENT)
+                    {'status': f'Вы отписались от пользователя с ID {pk}'},
+                    status=HTTPStatus.NO_CONTENT)
             return Response(
-                {'error': f'Вы не подписаны на {author.username}'},
-                status=status.HTTP_400_BAD_REQUEST)
+                {'error': f'Вы не подписаны на пользователя с ID {pk}'},
+                status=HTTPStatus.BAD_REQUEST)
 
     @action(detail=True,
             methods=['get'],
@@ -217,10 +223,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if created:
                 return Response(
                     {'status': 'Рецепт добавлен в список покупок'},
-                    status=status.HTTP_201_CREATED)
+                    status=HTTPStatus.CREATED)
             return Response(
                 {'error': 'Рецепт уже в списке покупок'},
-                status=status.HTTP_400_BAD_REQUEST)
+                status=HTTPStatus.BAD_REQUEST)
 
         elif request.method == 'DELETE':
             deleted_count, _ = ShoppingList.objects.filter(
@@ -229,10 +235,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if deleted_count:
                 return Response(
                     {'status': 'Рецепт удалён из списка покупок'},
-                    status=status.HTTP_204_NO_CONTENT)
+                    status=HTTPStatus.NO_CONTENT)
             return Response(
                 {'error': 'Рецепт не найден в списке покупок'},
-                status=status.HTTP_400_BAD_REQUEST)
+                status=HTTPStatus.BAD_REQUEST)
 
     @action(detail=True, methods=['get'], url_path='get-link')
     def get_link(self, request, pk=None):
@@ -257,10 +263,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 favorite.delete()
                 return Response(
                     {'status': 'Рецепт удалён из избранного'},
-                    status=status.HTTP_204_NO_CONTENT)
+                    status=HTTPStatus.NO_CONTENT)
             return Response(
                 {'error': 'Рецепт не найден в избранном'},
-                status=status.HTTP_400_BAD_REQUEST)
+                status=HTTPStatus.BAD_REQUEST)
 
     def create_recipe(request):
         """Создание нового рецепта, доступ к ингредиентам."""

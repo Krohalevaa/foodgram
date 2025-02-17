@@ -243,13 +243,15 @@ class UserSerializer(serializers.ModelSerializer):
     avatar = Base64ImageField(required=False, allow_null=True)
     recipes = RecipeSerializer(many=True, read_only=True)
     is_subscribed = serializers.SerializerMethodField()
+    recipes_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         """Метаданные для настройки сериализатора пользователя."""
 
         model = User
         fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'avatar', 'recipes', 'is_subscribed')
+                  'last_name', 'avatar', 'recipes', 'is_subscribed',
+                  'recipes_count')
 
     def get_is_subscribed(self, obj):
         """Проверяет, подписан ли пользователь на переданный объект."""
@@ -262,6 +264,12 @@ class UserSerializer(serializers.ModelSerializer):
                 author=obj,
                 subscriber=user).exists()
         return False
+
+    def to_representation(self, instance):
+        """Преобразует модель пользователя в словарь для сериализации."""
+        representation = super().to_representation(instance)
+        representation['recipes_count'] = instance.recipes.count()
+        return representation
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):

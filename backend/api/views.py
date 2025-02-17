@@ -298,8 +298,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_ingredients_from_shopping_list(self, shopping_list):
         """Извлекает ингредиенты из корзины покупок пользователя."""
         ingredients = defaultdict(float)
-        for item in shopping_list:
-            for recipe_ingredient in item.recipe.recipe_ingredients.all():
+        recipes = Recipe.objects.prefetch_related(
+            'recipe_ingredients__ingredient'
+        ).filter(id__in=[item.recipe.id for item in shopping_list])
+        for recipe in recipes:
+            for recipe_ingredient in recipe.recipe_ingredients.all():
                 ingredient = recipe_ingredient.ingredient
                 ingredients[
                     f'{ingredient.name} ({ingredient.unit})'

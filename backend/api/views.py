@@ -177,7 +177,7 @@ class UserViewSet(viewsets.ModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с рецептами."""
 
-    queryset = Recipe.objects.all().select_related('author').prefetch_related(
+    queryset = Recipe.objects.select_related('author').prefetch_related(
         'tags', 'ingredients')
     serializer_class = RecipeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -200,13 +200,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         """Добавление/удаление рецепта из списка покупок."""
-        recipe = get_object_or_404(Recipe, pk=pk)
-
         if request.method == 'POST':
-            obj, created = ShoppingList.objects.get_or_create(
-                user=request.user,
-                recipe=recipe)
-            if created:
+            recipe = get_object_or_404(Recipe, pk=pk)
+            data = {'user': request.user.id, 'recipe': recipe.id}
+            serializer = ShoppingListSerializer(data=data)
+
+            if serializer.is_valid():
+                serializer.save()
                 return Response(
                     {'status': 'Рецепт добавлен в список покупок'},
                     status=HTTPStatus.CREATED)
@@ -217,7 +217,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         elif request.method == 'DELETE':
             deleted_count, _ = ShoppingList.objects.filter(
                 user=request.user,
-                recipe=recipe).delete()
+                recipe_id=pk).delete()
             if deleted_count:
                 return Response(
                     {'status': 'Рецепт удалён из списка покупок'},
@@ -237,16 +237,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, pk=None):
         """Добавление или удаление рецепта в/из избранного."""
-        recipe = get_object_or_404(Recipe, pk=pk)
         if request.method == 'POST':
-            FavoriteRecipe.objects.get_or_create(user=request.user,
-                                                 recipe=recipe)
-            return Response({'status': 'Рецепт добавлен в избранное'})
+            recipe = get_object_or_404(Recipe, pk=pk)
+            data = {'user': request.user.id, 'recipe': recipe.id}
+            serializer = FavoriteRecipeSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {'status': 'Рецепт добавлен в избранное'},
+                    status=HTTPStatus.CREATED)
+            return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
+
         elif request.method == 'DELETE':
-            favorite = FavoriteRecipe.objects.filter(user=request.user,
-                                                     recipe=recipe)
-            if favorite.exists():
-                favorite.delete()
+            deleted_count, _ = FavoriteRecipe.objects.filter(
+                user=request.user, recipe_id=pk).delete()
+            if deleted_count:
                 return Response(
                     {'status': 'Рецепт удалён из избранного'},
                     status=HTTPStatus.NO_CONTENT)

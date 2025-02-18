@@ -180,7 +180,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return False
 
     def _update_tags_and_ingredients(self, recipe, tags, ingredients_data):
-        """Обновляет теги и ингредиенты рецепта, избегая дублирования кода."""
+        """Обновляет теги и ингредиенты рецепта."""
         recipe.tags.set(tags)
         recipe.recipe_ingredients.all().delete()
         ingredients = [

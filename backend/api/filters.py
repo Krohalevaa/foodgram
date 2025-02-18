@@ -40,7 +40,7 @@ class RecipeFilter(django_filters.FilterSet):
 
     def filter_is_favorited(self, queryset, name, value):
         """Фильтруем рецепты по добавлению в избранное."""
-        if value and self.request.user.is_authenticated:
+        if value:
             return queryset.filter(favorited_by_users__user=self.request.user)
         return queryset
 

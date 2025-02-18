@@ -3,6 +3,7 @@
 from collections import defaultdict
 from http import HTTPStatus
 
+from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -62,7 +63,7 @@ class UserAvatarUpdateView(generics.UpdateAPIView):
 class UserViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с пользователями."""
 
-    queryset = User.objects.all()
+    queryset = User.objects.annotate(recipes_count=Count('recipes'))
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
     pagination_class = LimitOffsetPagination

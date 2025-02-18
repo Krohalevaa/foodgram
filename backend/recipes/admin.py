@@ -10,10 +10,8 @@
 
 from django.contrib import admin
 
-from recipes.models import (
-    Recipe, Tag, Ingredient, RecipeIngredient,
-    FavoriteRecipe, ShoppingList, Subscription
-)
+from recipes.models import (FavoriteRecipe, Ingredient, Recipe,
+                            RecipeIngredient, ShoppingList, Subscription, Tag)
 
 
 @admin.register(Tag)

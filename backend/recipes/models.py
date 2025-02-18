@@ -1,17 +1,17 @@
 """Модуль моделей для работы с рецептами и подписками."""
 
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
+
 from slugify import slugify
 
+from recipes.constants import (MAX_LENGHT_NAME, MAX_LENGHT_NAME_TAG,
+                               MAX_LENGHT_NAME_TEXT, MAX_LENGHT_UNIT)
 from users.models import User
-from recipes.constants import (MAX_LENGHT_NAME, MAX_LENGHT_UNIT,
-                               MAX_LENGHT_NAME_TAG, MAX_LENGHT_NAME_TEXT)
 
 
 class Ingredient(models.Model):
-    """
-    Модель ингредиента.
+    """Модель ингредиента.
 
     Эта модель используется для хранения информации о ингредиентах,
     которые могут быть использованы в рецептах.
@@ -26,20 +26,16 @@ class Ingredient(models.Model):
         verbose_name='Единица измерения')
 
     class Meta:
-        """Метаданные для настройки модели ингредиента."""
-
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
         ordering = ('name',)
 
     def __str__(self):
-        """Возвращает строку объекта - название ингредиента."""
         return self.name
 
 
 class Tag(models.Model):
-    """
-    Модель тега рецепта.
+    """Модель тега рецепта.
 
     Эта модель используется для хранения тегов, которые могут быть
     присвоены рецептам.
@@ -60,20 +56,16 @@ class Tag(models.Model):
         default='#FFFFFF')
 
     class Meta:
-        """Метаданные для настройки модели тега."""
-
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
         ordering = ('name',)
 
     def __str__(self):
-        """Возвращает строку объекта - название тега."""
         return self.name
 
 
 class Recipe(models.Model):
-    """
-    Модель для страницы рецепта пользователя.
+    """Модель для страницы рецепта пользователя.
 
     Эта модель используется для хранения рецептов, включая название,
     описание, фото, время приготовления, автора, связанные теги и ингредиенты.
@@ -115,14 +107,11 @@ class Recipe(models.Model):
         verbose_name='Дата создания рецепта')
 
     class Meta:
-        """Метаданные для настройки модели рецепта."""
-
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ('creation_date',)
 
     def __str__(self):
-        """Возвращает строку объекта - название рецепта."""
         return self.name
 
     def save(self, *args, **kwargs):
@@ -144,8 +133,7 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
-    """
-    Модель для связи между рецептом и ингредиентом.
+    """Модель для связи между рецептом и ингредиентом.
 
     Эта модель используется для хранения информации о том, какие
     ингредиенты используются в рецепте, и в каком количестве.
@@ -166,23 +154,16 @@ class RecipeIngredient(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(10000)])
 
     class Meta:
-        """Метаданные для настройки модели связи ингредиента и рецепта."""
-
         verbose_name = 'Ингредиент рецепта'
         verbose_name_plural = 'Ингредиенты рецепта'
 
     def __str__(self):
-        """Возвращает строковое представление объекта.
-
-        Возвращает количество и единица измерения ингредиента.
-        """
         return (
             f'{self.amount} {self.ingredient.unit} of {self.ingredient.name}')
 
 
 class FavoriteRecipe(models.Model):
-    """
-    Модель для избранных рецептов пользователя.
+    """Модель для избранных рецептов пользователя.
 
     Эта модель используется для хранения избранных рецептов
     конкретного пользователя.
@@ -201,20 +182,16 @@ class FavoriteRecipe(models.Model):
         verbose_name='Рецепт')
 
     class Meta:
-        """Метаданные для настройки модели избранного."""
-
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
         unique_together = ('user', 'recipe')
 
     def __str__(self):
-        """Возвращает строку объекта - пользователь и рецепт."""
         return f'{self.user.username} -> {self.recipe.name}'
 
 
 class ShoppingList(models.Model):
-    """
-    Модель для списка покупок пользователя.
+    """Модель для списка покупок пользователя.
 
     Эта модель используется для хранения рецептов, которые
     добавлены пользователем в список покупок.
@@ -234,20 +211,16 @@ class ShoppingList(models.Model):
         verbose_name='Рецепт')
 
     class Meta:
-        """Метаданные для настройки модели списка покупок."""
-
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
         unique_together = ('user', 'recipe')
 
     def __str__(self):
-        """Возвращает строку объекта - имя пользователя и название рецепта."""
         return f'Список покупок для {self.user.username}: {self.recipe.name}'
 
 
 class Subscription(models.Model):
-    """
-    Модель для подписки пользователей.
+    """Модель для подписки пользователей.
 
     Эта модель используется для хранения информации о подписках пользователей
     на других пользователей (авторов рецептов).
@@ -266,11 +239,8 @@ class Subscription(models.Model):
         verbose_name='Подписчик')
 
     class Meta:
-        """Метаданные для настройки модели подписок."""
-
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
 
     def __str__(self):
-        """Возвращает строковое представление объекта - автор и подписчик."""
         return f'{self.author} -> {self.subscriber}'

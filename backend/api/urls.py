@@ -1,14 +1,13 @@
 """Модуль URL для работы проекта."""
 
-from django.urls import path, include
 from django.contrib import admin
+from django.urls import include, path
 
 from rest_framework.routers import DefaultRouter
 
-from .views import (RecipeViewSet, TagViewSet, IngredientViewSet,
-                    UserViewSet, FavoriteViewSet, ShopListViewSet,
-                    UserAvatarUpdateView)
-
+from .views import (FavoriteViewSet, IngredientViewSet, RecipeViewSet,
+                    ShopListViewSet, TagViewSet, UserAvatarUpdateView,
+                    UserViewSet)
 
 router = DefaultRouter()
 router.register(r'recipes', RecipeViewSet)

@@ -1,28 +1,29 @@
 """Модуль вью для работы с рецептаци и пользователями."""
 
-from http import HTTPStatus
 from collections import defaultdict
+from http import HTTPStatus
 
-from rest_framework import viewsets, permissions, status, generics
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.pagination import LimitOffsetPagination
-
-from django.shortcuts import get_object_or_404, render
-from django_filters.rest_framework import DjangoFilterBackend
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
-from recipes.models import (Recipe, Tag, Ingredient,
-                            FavoriteRecipe, ShoppingList, Subscription)
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from recipes.models import (FavoriteRecipe, Ingredient, Recipe, ShoppingList,
+                            Subscription, Tag)
 from users.models import User
-from .serializers import (UserSerializer, RecipeSerializer, TagSerializer,
-                          IngredientSerializer, FavoriteRecipeSerializer,
-                          ShoppingListSerializer, SubscriptionSerializer,
-                          CustomUserCreateSerializer)
-from .pagination import CustomPagination
+
 from .filters import IngredientFilter, RecipeFilter
+from .pagination import CustomPagination
+from .serializers import (CustomUserCreateSerializer, FavoriteRecipeSerializer,
+                          IngredientSerializer, RecipeSerializer,
+                          ShoppingListSerializer, SubscriptionSerializer,
+                          TagSerializer, UserSerializer)
 
 
 class IngredientViewSet(viewsets.ModelViewSet):

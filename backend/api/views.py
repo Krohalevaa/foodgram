@@ -123,9 +123,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         elif request.method == 'DELETE':
             deleted_count, _ = Subscription.objects.filter(
-                author__pk=pk,
-                subscriber=request.user
-            ).delete()
+                author__pk=pk, subscriber=request.user).delete()
             if deleted_count:
                 return Response(
                     {'status': f'Вы отписались от пользователя с ID {pk}'},

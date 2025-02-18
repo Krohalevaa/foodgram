@@ -105,11 +105,10 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes=[permissions.IsAuthenticated])
     def subscribe(self, request, pk=None):
         """Подписка или отписка от пользователя."""
-        if request.user.id == int(pk):
-            return Response(
-                {'error': 'Нельзя подписаться или отписаться от самого себя.'},
-                status=HTTPStatus.BAD_REQUEST)
-
+        data = {'author': pk, 'subscriber': request.user.id}
+        serializer = SubscriptionSerializer(data=data,
+                                            context={'request': request})
+        serializer.is_valid(raise_exception=True)
         if request.method == 'POST':
             author = get_object_or_404(User, pk=pk)
             data = {'author': author.id, 'subscriber': request.user.id}

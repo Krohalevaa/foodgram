@@ -311,3 +311,12 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         representation['author'] = UserSerializer(instance.author,
                                                   context=self.context).data
         return representation
+
+    def validate(self, attrs):
+        """Проверка, чтобы пользователь не подписывался на самого себя."""
+        request = self.context.get('request')
+        if request and request.user.id == attrs.get('author').id:
+            raise serializers.ValidationError(
+                'Нельзя подписаться на самого себя.'
+            )
+        return attrs

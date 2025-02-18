@@ -4,6 +4,7 @@ from collections import defaultdict
 from http import HTTPStatus
 
 from django.db.models import Count
+from django.db.models import Prefetch
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -16,7 +17,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from recipes.models import (FavoriteRecipe, Ingredient, Recipe, ShoppingList,
-                            Subscription, Tag)
+                            Subscription, Tag, RecipeIngredient)
 from users.models import User
 
 from .filters import IngredientFilter, RecipeFilter
@@ -288,14 +289,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Извлекает ингредиенты из корзины покупок пользователя."""
         ingredients = defaultdict(float)
         recipes = Recipe.objects.prefetch_related(
-            'recipe_ingredients__ingredient'
+            Prefetch(
+                'recipe_ingredients',
+                queryset=RecipeIngredient.objects.select_related('ingredient'),
+                to_attr='ingredients_details')
         ).filter(id__in=[item.recipe.id for item in shopping_list])
         for recipe in recipes:
-            for recipe_ingredient in recipe.recipe_ingredients.all():
+            for recipe_ingredient in recipe.ingredients_details:
                 ingredient = recipe_ingredient.ingredient
-                ingredients[
-                    f'{ingredient.name} ({ingredient.unit})'
-                ] += recipe_ingredient.amount
+                ingredient_key = f'{ingredient.name} ({ingredient.unit})'
+                ingredients[ingredient_key] += recipe_ingredient.amount
         return ingredients
 
     def generate_shopping_cart_content(self, ingredients):

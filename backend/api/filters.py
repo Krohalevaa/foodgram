@@ -13,8 +13,6 @@ class IngredientFilter(django_filters.FilterSet):
                                      lookup_expr='icontains')
 
     class Meta:
-        """Метаданные для настройки фильтрации модели Ingredient."""
-
         model = Ingredient
         fields = ['name']
 

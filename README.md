@@ -67,6 +67,13 @@ docker compose exec backend python manage.py createsuperuser
 - https://foodgram-net.hopto.org
 - Админ: https://foodgram-net.hopto.org/admin/
 
+### IP 
+89.169.161.149;
+
+### Админ учетка:
+Логин: admin@gmail.com
+Пароль: admin_yandex1
+
 ### Авторы
 
 - Крохалева Анна - разработка

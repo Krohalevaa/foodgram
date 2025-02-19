@@ -5,7 +5,6 @@ from http import HTTPStatus
 from django.db.models import Count, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
-from django.urls import reverse
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status, viewsets
@@ -72,7 +71,7 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = CustomUserCreateSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            login_url = reverse('login')
+            login_url = '/signin/'
             return Response(UserSerializer(user).data,
                             status=status.HTTP_201_CREATED,
                             headers={'Location': login_url})

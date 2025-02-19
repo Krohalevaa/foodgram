@@ -35,7 +35,8 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         """Метаданные для настройки сериализатора."""
 
         model = User
-        fields = ('id', 'email', 'username', 'password')
+        fields = ('id', 'email',
+                  'username', 'first_name', 'last_name', 'password')
 
     def create(self, validated_data):
         """Создание пользователя с хешированным паролем."""

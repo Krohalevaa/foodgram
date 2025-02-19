@@ -28,4 +28,5 @@ urlpatterns = [
          name='user-me'),
     path('users/me/avatar/', UserAvatarUpdateView.as_view(),
          name='user-avatar-update'),
+    path('signin/', UserViewSet.as_view({'post': 'create'}), name='login'),
 ]

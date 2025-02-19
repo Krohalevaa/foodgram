@@ -306,6 +306,8 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 
     serializer_class = FavoriteRecipeSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
 
     def get_queryset(self):
         """Возвращает избранные рецепты для текущего пользователя."""

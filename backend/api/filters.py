@@ -1,6 +1,7 @@
 """Модуль с фильтрацией ингредиентов в Django-проекте."""
 
 import django_filters
+from django_filters import rest_framework as filters
 
 from recipes.models import Ingredient, Recipe, Tag
 
@@ -19,63 +20,32 @@ class IngredientFilter(django_filters.FilterSet):
 
 
 class RecipeFilter(django_filters.FilterSet):
-    """ Фильтр для отображения избранного и списка покупок"""
+    """Фильтр для модели Recipe."""
 
-    tags = django_filters.filters.ModelMultipleChoiceFilter(
-        queryset=Tag.objects.all(),
+    author = filters.CharFilter(
+        field_name='author__id',
+        lookup_expr='icontains')
+    tags = django_filters.ModelMultipleChoiceFilter(
         field_name='tags__slug',
+        queryset=Tag.objects.all(),
         to_field_name='slug')
-    is_favorited = django_filters.filters.NumberFilter(
-        method='is_recipe_in_favorites_filter')
-    is_in_shopping_cart = django_filters.filters.NumberFilter(
-        method='is_recipe_in_shoppingcart_filter')
-
-    def is_recipe_in_favorites_filter(self, queryset, name, value):
-        """Фильтруем рецепты по добавлению в избранное."""
-        if value == 1:
-            user = self.request.user
-            return queryset.filter(favorites__user_id=user.id)
-        return queryset
-
-    def is_recipe_in_shoppingcart_filter(self, queryset, name, value):
-        """Фильтруем рецепты по добавлению в список покупок."""
-        if value == 1:
-            user = self.request.user
-            return queryset.filter(shopping_recipe__user_id=user.id)
-        return queryset
+    is_favorited = django_filters.BooleanFilter(
+        method='filter_is_favorited')
+    is_in_shopping_cart = django_filters.BooleanFilter(
+        method='filter_is_in_shopping_cart')
 
     class Meta:
         model = Recipe
-        fields = ('tags', 'author', 'is_favorited', 'is_in_shopping_cart')
+        fields = ['author', 'tags', 'is_favorited', 'is_in_shopping_cart']
 
-# class RecipeFilter(django_filters.FilterSet):
-#     """Фильтр для модели Recipe."""
+    def filter_is_favorited(self, queryset, name, value):
+        """Фильтруем рецепты по добавлению в избранное."""
+        if value:
+            return queryset.filter(favorited_by_users__user=self.request.user)
+        return queryset
 
-#     author = filters.CharFilter(
-#         field_name='author__id',
-#         lookup_expr='icontains')
-#     tags = django_filters.ModelMultipleChoiceFilter(
-#         field_name='tags__slug',
-#         queryset=Tag.objects.all(),
-#         to_field_name='slug')
-#     is_favorited = django_filters.BooleanFilter(
-#         method='filter_is_favorited')
-#     is_in_shopping_cart = django_filters.BooleanFilter(
-#         method='filter_is_in_shopping_cart')
-
-#     class Meta:
-#         model = Recipe
-#         fields = ['author', 'tags', 'is_favorited', 'is_in_shopping_cart']
-
-#     def filter_is_favorited(self, queryset, name, value):
-#         """Фильтруем рецепты по добавлению в избранное."""
-#         if value and self.request and self.request.user.is_authenticated:
-#             return queryset.filter(
-# favorited_by_users__user=self.request.user)
-#         return queryset
-
-#     def filter_is_in_shopping_cart(self, queryset, name, value):
-#         """Фильтруем рецепты по добавлению в список покупок."""
-#         if value:
-#             return queryset.filter(shopping_lists__user=self.request.user)
-#         return queryset
+    def filter_is_in_shopping_cart(self, queryset, name, value):
+        """Фильтруем рецепты по добавлению в список покупок."""
+        if value:
+            return queryset.filter(shopping_lists__user=self.request.user)
+        return queryset

@@ -1,10 +1,8 @@
 """Модуль вью для работы с рецептаци и пользователями."""
 
-from collections import defaultdict
 from http import HTTPStatus
 
-from django.db.models import Count
-from django.db.models import Prefetch
+from django.db.models import Count, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -17,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from recipes.models import (FavoriteRecipe, Ingredient, Recipe, ShoppingList,
-                            Subscription, Tag, RecipeIngredient)
+                            Subscription, Tag)
 from users.models import User
 
 from .filters import IngredientFilter, RecipeFilter
@@ -106,10 +104,6 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes=[permissions.IsAuthenticated])
     def subscribe(self, request, pk=None):
         """Подписка или отписка от пользователя."""
-        data = {'author': pk, 'subscriber': request.user.id}
-        serializer = SubscriptionSerializer(data=data,
-                                            context={'request': request})
-        serializer.is_valid(raise_exception=True)
         if request.method == 'POST':
             author = get_object_or_404(User, pk=pk)
             data = {'author': author.id, 'subscriber': request.user.id}
@@ -287,19 +281,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def get_ingredients_from_shopping_list(self, shopping_list):
         """Извлекает ингредиенты из корзины покупок пользователя."""
-        ingredients = defaultdict(float)
-        recipes = Recipe.objects.prefetch_related(
-            Prefetch(
-                'recipe_ingredients',
-                queryset=RecipeIngredient.objects.select_related('ingredient'),
-                to_attr='ingredients_details')
-        ).filter(id__in=[item.recipe.id for item in shopping_list])
-        for recipe in recipes:
-            for recipe_ingredient in recipe.ingredients_details:
-                ingredient = recipe_ingredient.ingredient
-                ingredient_key = f'{ingredient.name} ({ingredient.unit})'
-                ingredients[ingredient_key] += recipe_ingredient.amount
-        return ingredients
+        ingredients = (
+            Ingredient.objects
+            .filter(
+                recipeingredient__recipe__shoppinglist__user=self.request.user)
+            .annotate(total_amount=Sum('recipeingredient__amount'))
+            .values('name', 'unit', 'total_amount')
+        )
+
+        return {
+            f"{ingredient['name']} ({ingredient['unit']})":
+            ingredient['total_amount']
+            for ingredient in ingredients
+        }
 
     def generate_shopping_cart_content(self, ingredients):
         """Генерирует контент для скачивания в виде текста."""
@@ -310,7 +304,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class FavoriteViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с избранными рецептами пользователя."""
 
-    queryset = FavoriteRecipe.objects.all()
     serializer_class = FavoriteRecipeSerializer
     permission_classes = [permissions.IsAuthenticated]
 

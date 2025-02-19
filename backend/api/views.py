@@ -304,12 +304,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class FavoriteViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с избранными рецептами пользователя."""
 
-    serializer_class = FavoriteRecipeSerializer
+    serializer_class = RecipeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         """Возвращает избранные рецепты для текущего пользователя."""
-        return FavoriteRecipe.objects.filter(user=self.request.user)
+        return Recipe.objects.filter(
+            favorited_by_users__user=self.request.user)
 
 
 class ShopListViewSet(viewsets.ModelViewSet):

@@ -242,18 +242,12 @@ class ShoppingListSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для пользователя."""
 
-    avatar = Base64ImageField(required=False, allow_null=True)
-    recipes = RecipeSerializer(many=True, read_only=True)
-    is_subscribed = serializers.SerializerMethodField()
-    recipes_count = serializers.IntegerField(read_only=True, default=0)
-
     class Meta:
         """Метаданные для настройки сериализатора пользователя."""
 
         model = User
-        fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'avatar', 'recipes', 'is_subscribed',
-                  'recipes_count')
+        fields = ('email', 'username', 'first_name',
+                  'last_name', 'password', )
 
     def get_is_subscribed(self, obj):
         """Проверяет, подписан ли пользователь на переданный объект."""

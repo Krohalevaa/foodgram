@@ -187,6 +187,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         context['request'] = self.request
         return context
 
+    def get_queryset(self):
+        """Фильтруем рецепты по избранному и списку покупок."""
+        queryset = Recipe.objects.all()
+        request = self.request
+        is_favorited = request.query_params.get('is_favorited')
+        if request.user.is_authenticated and is_favorited == '1':
+            queryset = queryset.filter(favorited_by_users__user=request.user)
+        is_in_shopping_cart = request.query_params.get('is_in_shopping_cart')
+        if request.user.is_authenticated and is_in_shopping_cart == '1':
+            queryset = queryset.filter(shopping_lists__user=request.user)
+        return queryset
+
     @action(detail=True,
             methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])

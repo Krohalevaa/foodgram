@@ -21,6 +21,7 @@ class TagAdmin(admin.ModelAdmin):
     list_display = ('name', 'color', 'slug')
     search_fields = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',)}
+    list_display_links = ('name', 'slug')
 
 
 @admin.register(Ingredient)
@@ -29,7 +30,6 @@ class IngredientAdmin(admin.ModelAdmin):
 
     list_display = ('name', 'unit')
     search_fields = ('name',)
-    list_filter = ('name',)
 
 
 @admin.register(Recipe)
@@ -38,8 +38,16 @@ class RecipeAdmin(admin.ModelAdmin):
 
     list_display = ('name', 'author', 'cooking_time', 'creation_date')
     search_fields = ('name', 'author__username')
-    list_filter = ('tags', 'author')
+    list_filter = ('tags__name', 'author__username')
     autocomplete_fields = ('tags', 'ingredients')
+    list_display_links = ('name', 'author')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            'author'
+        ).prefetch_related(
+            'tags', 'ingredients'
+        ).distinct()
 
 
 @admin.register(RecipeIngredient)
@@ -49,6 +57,7 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
     list_display = ('recipe', 'ingredient', 'amount')
     search_fields = ('recipe__name', 'ingredient__name')
     list_filter = ('recipe', 'ingredient')
+    list_select_related = ('recipe', 'ingredient')
 
 
 @admin.register(FavoriteRecipe)
@@ -58,6 +67,7 @@ class FavoriteRecipeAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe')
     search_fields = ('user__username', 'recipe__name')
     list_filter = ('user', 'recipe')
+    list_select_related = ('user', 'recipe')
 
 
 @admin.register(ShoppingList)
@@ -66,7 +76,8 @@ class ShoppingListAdmin(admin.ModelAdmin):
 
     list_display = ('user', 'recipe')
     search_fields = ('user__username', 'recipe__name')
-    list_filter = ('user',)
+    list_filter = ('user__is_active',)
+    list_select_related = ('user', 'recipe')
 
 
 @admin.register(Subscription)
@@ -75,4 +86,5 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
     list_display = ('author', 'subscriber')
     search_fields = ('author__username', 'subscriber__username')
-    list_filter = ('author', 'subscriber')
+    list_filter = ('author__is_active', 'subscriber__is_active')
+    list_select_related = ('author', 'subscriber')

@@ -84,7 +84,9 @@ class Recipe(models.Model):
         blank=True)
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления рецепта в минутах',
-        validators=[MinValueValidator(1), MaxValueValidator(1440)])
+        validators=[MinValueValidator(1), MaxValueValidator(1440)],
+        null=False,
+        blank=False )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

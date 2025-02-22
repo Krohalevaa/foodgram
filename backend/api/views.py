@@ -295,8 +295,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ingredients = (
             Ingredient.objects
             .filter(
-                recipeingredient__recipe__shoppinglist__user=self.request.user)
-            .annotate(total_amount=Sum('recipeingredient__amount'))
+                ingredient_recipes__recipe__shopping_lists__user=(
+                    self.request.user)
+            )
+            .annotate(total_amount=Sum('ingredient_recipes__amount'))
             .values('name', 'unit', 'total_amount')
         )
 

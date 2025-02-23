@@ -264,16 +264,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, pk=None):
         """Добавление или удаление рецепта в/из избранного."""
+        recipe = get_object_or_404(Recipe, pk=pk)
+
         if request.method == 'POST':
-            recipe = get_object_or_404(Recipe, pk=pk)
+            if FavoriteRecipe.objects.filter(user=request.user,
+                                             recipe=recipe).exists():
+                return Response(
+                    {'error': 'Рецепт уже в избранном'},
+                    status=status.HTTP_400_BAD_REQUEST)
             data = {'user': request.user.id, 'recipe': recipe.id}
             serializer = FavoriteRecipeSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(
                     {'status': 'Рецепт добавлен в избранное'},
-                    status=HTTPStatus.CREATED)
-            return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
+                    status=status.HTTP_201_CREATED)
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
 
         elif request.method == 'DELETE':
             deleted_count, _ = FavoriteRecipe.objects.filter(
@@ -281,10 +288,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if deleted_count:
                 return Response(
                     {'status': 'Рецепт удалён из избранного'},
-                    status=HTTPStatus.NO_CONTENT)
+                    status=status.HTTP_204_NO_CONTENT
+                )
             return Response(
                 {'error': 'Рецепт не найден в избранном'},
-                status=HTTPStatus.BAD_REQUEST)
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def create_recipe(request):
         """Создание нового рецепта, доступ к ингредиентам."""

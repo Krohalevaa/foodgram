@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -33,6 +34,11 @@ class IngredientViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.AllowAny]
     filter_backends = [DjangoFilterBackend]
     filterset_class = IngredientFilter
+    http_method_names = ['get', 'post', 'head', 'options', 'delete']
+
+    def create(self, request, *args, **kwargs):
+        """Запрещаем создание ингредиента."""
+        raise MethodNotAllowed('POST')
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -41,6 +47,18 @@ class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [permissions.AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        """Переопределение метода создания."""
+        if Tag.objects.filter(name=request.data.get('name')).exists():
+            raise MethodNotAllowed('Method Not Allowed')
+        if Tag.objects.filter(slug=request.data.get('slug')).exists():
+            raise MethodNotAllowed('Method Not Allowed')
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        """Обработка ошибки, для обновления."""
+        raise MethodNotAllowed('PUT')
 
 
 class UserAvatarUpdateView(generics.UpdateAPIView):
@@ -77,22 +95,28 @@ class UserViewSet(viewsets.ModelViewSet):
                             headers={'Location': login_url})
         return Response(serializer.errors, status=HTTPStatus.BAD_REQUEST)
 
-    @action(detail=False,
-            methods=['get'],
+    @action(detail=False, methods=['get'],
             permission_classes=[permissions.AllowAny])
     def me(self, request):
         """Получение информации о текущем пользователе."""
-        user = request.user
-        serializer = self.get_serializer(user)
+        if not request.user.is_authenticated:
+            return Response({
+                'detail': 'Учетные данные не были предоставлены.'},
+                status=status.HTTP_401_UNAUTHORIZED)
+        serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
     @action(detail=False, methods=['post'])
     def set_password(self, request):
         """Изменение пароля текущего пользователя."""
         user = request.user
+        current_password = request.data.get('current_password')
         new_password = request.data.get('new_password')
-        if not new_password:
-            return Response({'error': 'Новый пароль обязателен'},
+        if not current_password or not new_password:
+            return Response({'error': 'Текущий и новый пароли обязательны'},
+                            status=HTTPStatus.BAD_REQUEST)
+        if not user.check_password(current_password):
+            return Response({'error': 'Неверный текущий пароль'},
                             status=HTTPStatus.BAD_REQUEST)
         user.set_password(new_password)
         user.save()

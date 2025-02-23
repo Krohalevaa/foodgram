@@ -246,8 +246,8 @@ class UserSerializer(serializers.ModelSerializer):
         """Метаданные для настройки сериализатора пользователя."""
 
         model = User
-        fields = ('email', 'username', 'first_name',
-                  'last_name', 'password', )
+        fields = ('id', 'email', 'username', 'first_name',
+                  'last_name')
 
     def get_is_subscribed(self, obj):
         """Проверяет, подписан ли пользователь на переданный объект."""

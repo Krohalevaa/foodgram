@@ -96,8 +96,7 @@ class UserViewSet(viewsets.ModelViewSet):
                             status=HTTPStatus.BAD_REQUEST)
         user.set_password(new_password)
         user.save()
-        return Response({'status': 'Пароль успешно изменён'},
-                        status=HTTPStatus.OK)
+        return Response(status=HTTPStatus.NO_CONTENT)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[permissions.IsAuthenticated])

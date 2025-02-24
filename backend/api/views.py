@@ -10,7 +10,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import MethodNotAllowed
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -19,7 +18,7 @@ from recipes.models import (FavoriteRecipe, Ingredient, Recipe, ShoppingList,
 from users.models import User
 
 from .filters import IngredientFilter, RecipeFilter
-from .pagination import CustomPagination
+from .pagination import CustomPagination, UserPagination
 from .serializers import (CustomUserCreateSerializer, FavoriteRecipeSerializer,
                           IngredientSerializer, RecipeSerializer,
                           ShoppingListSerializer, SubscriptionSerializer,
@@ -82,7 +81,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.annotate(recipes_count=Count('recipes'))
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
-    pagination_class = LimitOffsetPagination
+    pagination_class = UserPagination
 
     def create(self, request, *args, **kwargs):
         """Создание пользователя с хешированным паролем."""

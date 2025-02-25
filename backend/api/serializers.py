@@ -243,13 +243,17 @@ class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для пользователя."""
 
     avatar = Base64ImageField(required=False, allow_null=True)
+    url = serializers.HyperlinkedIdentityField(
+        view_name='api:user-detail',
+        lookup_field='pk'
+    )
 
     class Meta:
         """Метаданные для настройки сериализатора пользователя."""
 
         model = User
         fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'avatar')
+                  'last_name', 'avatar', 'url')
 
     def get_is_subscribed(self, obj):
         """Проверяет, подписан ли пользователь на переданный объект."""
@@ -288,19 +292,15 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                   'username', 'first_name', 'last_name', 'avatar')
 
     def get_recipes(self, obj):
-        """Возвращает список рецептов автора подписки."""
-        recipes_limit = self.context.get('recipes_limit')
         recipes_qs = obj.author.recipes.all()
-
-        if isinstance(recipes_limit, int):
-            recipes_qs = recipes_qs[:recipes_limit]
-        elif isinstance(recipes_limit, str) and recipes_limit.isdigit():
-            recipes_qs = recipes_qs[:int(recipes_limit)]
-
+        total_count = recipes_qs.count()
+        recipes_qs = recipes_qs[:3]
         serializer = RecipeSerializer(recipes_qs,
                                       many=True,
                                       context=self.context)
-        return serializer.data
+        return {
+            'recipes': serializer.data,
+            'recipes_count': total_count}
 
     def to_representation(self, instance):
         """Возвращает подробную информацию об авторе подписки в ответе."""

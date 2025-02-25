@@ -46,8 +46,7 @@ class RecipeAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related(
             'author'
         ).prefetch_related(
-            'tags', 'ingredients'
-        ).distinct()
+            'tags', 'ingredients')
 
 
 @admin.register(RecipeIngredient)
@@ -59,6 +58,10 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
     list_filter = ('recipe', 'ingredient')
     list_select_related = ('recipe', 'ingredient')
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('recipe',
+                                                            'ingredient')
+
 
 @admin.register(FavoriteRecipe)
 class FavoriteRecipeAdmin(admin.ModelAdmin):
@@ -68,6 +71,9 @@ class FavoriteRecipeAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'recipe__name')
     list_filter = ('user', 'recipe')
     list_select_related = ('user', 'recipe')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'recipe')
 
 
 @admin.register(ShoppingList)
@@ -79,6 +85,9 @@ class ShoppingListAdmin(admin.ModelAdmin):
     list_filter = ('user__is_active',)
     list_select_related = ('user', 'recipe')
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'recipe')
+
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
@@ -88,3 +97,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
     search_fields = ('author__username', 'subscriber__username')
     list_filter = ('author__is_active', 'subscriber__is_active')
     list_select_related = ('author', 'subscriber')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('author',
+                                                            'subscriber')

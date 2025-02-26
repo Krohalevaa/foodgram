@@ -295,7 +295,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         """Возвращает 3 последних рецепта автора."""
-        recipes = obj.author.recipes.order_by('-created_at')[:3]
+        recipes = obj.author.recipes.order_by('-creation_date')[:3]
         serializer = RecipeSerializer(recipes, many=True, context=self.context)
         return serializer.data
 

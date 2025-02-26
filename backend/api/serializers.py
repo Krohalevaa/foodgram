@@ -283,24 +283,25 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                                       read_only=True)
     avatar = serializers.ImageField(source='author.avatar',
                                     read_only=True)
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta:
         """Метаданные для настройки сериализатора подписок."""
 
         model = Subscription
         fields = ('id', 'author', 'subscriber', 'recipes',
-                  'username', 'first_name', 'last_name', 'avatar')
+                  'username', 'first_name', 'last_name', 'avatar',
+                  'recipes_count')
 
     def get_recipes(self, obj):
-        recipes_qs = obj.author.recipes.all()
-        total_count = recipes_qs.count()
-        recipes_qs = recipes_qs[:3]
-        serializer = RecipeSerializer(recipes_qs,
-                                      many=True,
-                                      context=self.context)
-        return {
-            'recipes': serializer.data,
-            'recipes_count': total_count}
+        """Возвращает 3 последних рецепта автора."""
+        recipes = obj.author.recipes.order_by('-created_at')[:3]
+        serializer = RecipeSerializer(recipes, many=True, context=self.context)
+        return serializer.data
+
+    def get_recipes_count(self, obj):
+        """Возвращает общее количество рецептов автора."""
+        return obj.author.recipes.count()
 
     def to_representation(self, instance):
         """Возвращает подробную информацию об авторе подписки в ответе."""

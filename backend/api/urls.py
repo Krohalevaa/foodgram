@@ -16,6 +16,7 @@ router.register(r'ingredients', IngredientViewSet)
 router.register(r'favorites', FavoriteViewSet, basename='favorites')
 router.register(r'users', UserViewSet)
 router.register(r'shopping_cart', ShopListViewSet, basename='shopping_cart')
+router.register(r'users', UserViewSet, basename='users')
 
 app_name = 'api'
 

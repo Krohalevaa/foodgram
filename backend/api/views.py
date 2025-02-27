@@ -78,6 +78,7 @@ class UserAvatarUpdateView(generics.UpdateAPIView):
 class UserViewSet(viewsets.ModelViewSet):
     """Вьюсет для работы с пользователями."""
 
+    lookup_field = 'pk'
     queryset = User.objects.annotate(recipes_count=Count('recipes'))
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]

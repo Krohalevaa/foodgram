@@ -243,17 +243,13 @@ class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для пользователя."""
 
     avatar = Base64ImageField(required=False, allow_null=True)
-    url = serializers.HyperlinkedIdentityField(
-        view_name='api:user-detail',
-        lookup_field='pk'
-    )
 
     class Meta:
         """Метаданные для настройки сериализатора пользователя."""
 
         model = User
         fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'avatar', 'url')
+                  'last_name', 'avatar')
 
     def get_is_subscribed(self, obj):
         """Проверяет, подписан ли пользователь на переданный объект."""

@@ -10,6 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import MethodNotAllowed
+from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -197,8 +198,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = CustomPagination
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = RecipeFilter
+    ordering_fields = ['creation_date']
+    ordering = ['-creation_date', '-id']
 
     def perform_create(self, serializer):
         """Автоматически устанавливаем текущего пользователя как автора."""
@@ -212,7 +215,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Фильтруем рецепты по избранному и списку покупок."""
-        queryset = Recipe.objects.all()
+        queryset = Recipe.objects.all().order_by('-creation_date', '-id')
         request = self.request
         is_favorited = request.query_params.get('is_favorited')
         if request.user.is_authenticated and is_favorited == '1':

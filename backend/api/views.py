@@ -129,6 +129,12 @@ class UserViewSet(viewsets.ModelViewSet):
         """Подписка или отписка от пользователя."""
         if request.method == 'POST':
             author = get_object_or_404(User, pk=pk)
+            if Subscription.objects.filter(subscriber=request.user,
+                                           author=author).exists():
+                return Response(
+                    {'error': f'Вы уже подписаны на {author.username}'},
+                    status=HTTPStatus.BAD_REQUEST
+                )
             data = {'author': author.id, 'subscriber': request.user.id}
             serializer = SubscriptionSerializer(
                 data=data, context={'request': request})

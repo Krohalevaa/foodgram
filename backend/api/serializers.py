@@ -243,13 +243,14 @@ class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для пользователя."""
 
     avatar = Base64ImageField(required=False, allow_null=True)
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         """Метаданные для настройки сериализатора пользователя."""
 
         model = User
         fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'avatar')
+                  'last_name', 'avatar', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
         """Проверяет, подписан ли пользователь на переданный объект."""
@@ -267,6 +268,7 @@ class UserSerializer(serializers.ModelSerializer):
 class SubscriptionSerializer(serializers.ModelSerializer):
     """Сериализатор для подписок пользователей."""
 
+    id = serializers.ReadOnlyField(source='author.id')
     author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     subscriber = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all())

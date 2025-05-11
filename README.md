@@ -77,4 +77,4 @@ docker compose exec backend python manage.py createsuperuser
 ### Авторы
 
 - Крохалева Анна - разработка
-- Яндекс.Практикум - образовательная платформа
+
